@@ -99,7 +99,7 @@ impl PlayerBuilder {
         }
     }
 
-    fn get_production(&self) -> Resources {
+    pub(crate) fn get_production(&self) -> Resources {
         let mut resources_builder = ResourcesBuilder::default();
         for card in &self.deck {
             match card.production {

@@ -1,6 +1,7 @@
 use crate::moves::get_three::GetThree;
 use crate::moves::get_two::GetTwo;
 use crate::moves::reserve::Reserve;
+use crate::moves::build_card::BuildCard;
 use crate::moves::build_from_reserve::BuildFromReserve;
 use crate::moves::move_trait::Move;
 use crate::resource::Resource;
@@ -33,6 +34,7 @@ pub fn get_all_moves() -> Vec<Box<dyn Move>> {
     for tier_index in 0..=2 {
         for card_index in 0..=3 {
             moves.push(Box::new(Reserve::new(CardReference::new(tier_index, card_index))));
+            moves.push(Box::new(BuildCard::new(CardReference::new(tier_index, card_index))));
         }
     }
     

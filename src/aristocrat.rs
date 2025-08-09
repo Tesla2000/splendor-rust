@@ -1,5 +1,5 @@
 use crate::card::cost::Cost;
-use crate::player::Player;
+use crate::player::{Player, PlayerBuilder};
 use crate::resources::Resources;
 
 pub const ARISTOCRAT_POINTS: u8 = 3;

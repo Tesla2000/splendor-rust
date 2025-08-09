@@ -32,6 +32,7 @@ fn main() {
             .collect();
 
         if valid_moves.is_empty() {
+            println!("No valid moves");
             break;
         }
 
@@ -53,4 +54,5 @@ fn main() {
         }
         current_state = new_current_state;
     }
+    current_state;
 }

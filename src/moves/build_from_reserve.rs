@@ -23,11 +23,18 @@ impl Move for BuildFromReserve {
 
     fn perform(&self, game_state: &GameState) -> GameState {
         let mut game_state_builder = GameStateBuilder::new(game_state);
+        let card = game_state_builder.get_current_player().reserve.remove(self.index);
+        game_state_builder.board.resources.add(&card.clone().cost.to_resources().to_builder());
         let player = game_state_builder.get_current_player();
-        let card = player.reserve.remove(self.index);
         player.pay_for_card(&card);
         player.deck.push(card);
-        game_state_builder.current_player_index = (game_state_builder.current_player_index + 1) % game_state_builder.players.len();
-        game_state_builder.build()
+        for (index, aristocrat) in game_state.get_board().get_aristocrats().iter().enumerate() {
+            if aristocrat.can_be_taken_by(game_state.get_current_player()) {
+                player.aristocrats.push(game_state.get_board().get_aristocrats().get(index).expect("Aristocrat not found").clone());
+                game_state_builder.board.aristocrats.remove(index);
+                break;
+            }
+        }
+        self.finalize(game_state_builder)
     }
 }

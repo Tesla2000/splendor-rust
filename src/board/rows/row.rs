@@ -20,7 +20,7 @@ impl Row {
     }
 
     pub fn has_card(&self, index: usize) -> bool {
-        self.visible.len() < index
+        index < self.visible.len()
     }
 
     pub fn get_card(&self, index: usize) -> &Card {
@@ -47,7 +47,11 @@ impl RowBuilder {
 
     pub fn remove(&mut self, index: usize) -> Card {
         let card = self.visible.remove(index);
-        self.visible.push(self.hidden.remove(0));
+        if self.hidden.is_empty() {
+            self.visible.pop();
+        } else {
+            self.visible.push(self.hidden.remove(0));
+        }
         card
     }
 

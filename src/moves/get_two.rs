@@ -53,6 +53,6 @@ impl Move for GetTwo {
     }
 
     fn perform(&self, game_state: &GameState) -> GameState {
-        give_player_resources(&self.resources, game_state)
+        self.finalize(give_player_resources(&self.resources, game_state))
     }
 }
