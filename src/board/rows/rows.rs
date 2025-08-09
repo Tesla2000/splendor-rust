@@ -1,6 +1,6 @@
 use rand::prelude::ThreadRng;
 use crate::board::rows::card_reference::CardReference;
-use crate::board::rows::row::Row;
+use crate::board::rows::row::{Row, RowBuilder};
 use crate::card::card::Card;
 use crate::card::cost::Cost;
 use crate::card::tier::Tier;
@@ -127,5 +127,57 @@ impl Rows {
             2 => {Self {rows: (self.rows.0.clone(), self.rows.1.clone(), updated_row)}}
             _ => {panic!("Invalid index");} 
         }
+    }
+}
+
+pub(crate) struct RowsBuilder {
+    rows: (RowBuilder, RowBuilder, RowBuilder),
+}
+
+impl RowsBuilder {
+    pub fn new(rows: Rows) -> Self {
+        Self {
+            rows: (
+                RowBuilder::new(rows.rows.0),
+                RowBuilder::new(rows.rows.1),
+                RowBuilder::new(rows.rows.2),
+            ),
+        }
+    }
+
+    pub fn build(self) -> Rows {
+        Rows {
+            rows: (
+                self.rows.0.build(),
+                self.rows.1.build(),
+                self.rows.2.build(),
+            ),
+        }
+    }
+
+    // Getters
+    pub fn get_row_0(&self) -> &RowBuilder {
+        &self.rows.0
+    }
+
+    pub fn get_row_1(&self) -> &RowBuilder {
+        &self.rows.1
+    }
+
+    pub fn get_row_2(&self) -> &RowBuilder {
+        &self.rows.2
+    }
+
+    // Setters
+    pub fn set_row_0(&mut self, row: RowBuilder) {
+        self.rows.0 = row;
+    }
+
+    pub fn set_row_1(&mut self, row: RowBuilder) {
+        self.rows.1 = row;
+    }
+
+    pub fn set_row_2(&mut self, row: RowBuilder) {
+        self.rows.2 = row;
     }
 }

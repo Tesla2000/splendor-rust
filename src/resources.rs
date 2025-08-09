@@ -102,4 +102,79 @@ pub struct ResourcesBuilder {
     pub n_blue: u8,
     pub n_white: u8,
     pub n_black: u8,
+    pub n_gold: u8,
+}
+
+impl ResourcesBuilder {
+    pub fn new(resources: Resources) -> Self {
+        Self {
+            n_green: resources.n_green,
+            n_red: resources.n_red,
+            n_blue: resources.n_blue,
+            n_white: resources.n_white,
+            n_black: resources.n_black,
+            n_gold: resources.n_gold,
+        }
+    }
+
+    pub fn build(self) -> Resources {
+        Resources {
+            n_green: self.n_green,
+            n_red: self.n_red,
+            n_blue: self.n_blue,
+            n_white: self.n_white,
+            n_black: self.n_black,
+            n_gold: self.n_gold,
+        }
+    }
+
+    // Getters
+    pub fn get_n_green(&self) -> u8 {
+        self.n_green
+    }
+
+    pub fn get_n_red(&self) -> u8 {
+        self.n_red
+    }
+
+    pub fn get_n_blue(&self) -> u8 {
+        self.n_blue
+    }
+
+    pub fn get_n_white(&self) -> u8 {
+        self.n_white
+    }
+
+    pub fn get_n_black(&self) -> u8 {
+        self.n_black
+    }
+
+    pub fn get_n_gold(&self) -> u8 {
+        self.n_gold
+    }
+
+    // Setters
+    pub fn set_n_green(&mut self, n_green: u8) {
+        self.n_green = n_green;
+    }
+
+    pub fn set_n_red(&mut self, n_red: u8) {
+        self.n_red = n_red;
+    }
+
+    pub fn set_n_blue(&mut self, n_blue: u8) {
+        self.n_blue = n_blue;
+    }
+
+    pub fn set_n_white(&mut self, n_white: u8) {
+        self.n_white = n_white;
+    }
+
+    pub fn set_n_black(&mut self, n_black: u8) {
+        self.n_black = n_black;
+    }
+
+    pub fn set_n_gold(&mut self, n_gold: u8) {
+        self.n_gold = n_gold;
+    }
 }

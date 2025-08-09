@@ -1,5 +1,5 @@
-use crate::aristocrat::{Aristocrat, ARISTOCRAT_POINTS};
-use crate::card::card::Card;
+use crate::aristocrat::{Aristocrat, AristocratBuilder, ARISTOCRAT_POINTS};
+use crate::card::card::{Card, CardBuilder};
 use crate::card::cost::Cost;
 use crate::resource::Resource;
 use crate::resources::{Resources, ResourcesBuilder};
@@ -78,5 +78,66 @@ impl Player {
             reserve: reserve,
             aristocrats: self.aristocrats.clone(),
         }
+    }
+}
+
+pub struct PlayerBuilder {
+    deck: Vec<CardBuilder>,
+    resources: ResourcesBuilder,
+    reserve: Vec<CardBuilder>,
+    aristocrats: Vec<AristocratBuilder>,
+}
+
+impl PlayerBuilder {
+    pub fn new(player: Player) -> Self {
+        Self {
+            deck: player.deck.into_iter().map(CardBuilder::new).collect(),
+            resources: ResourcesBuilder::new(player.resources),
+            reserve: player.reserve.into_iter().map(CardBuilder::new).collect(),
+            aristocrats: player.aristocrats.into_iter().map(AristocratBuilder::new).collect(),
+        }
+    }
+
+    pub fn build(self) -> Player {
+        Player {
+            deck: self.deck.into_iter().map(|b| b.build()).collect(),
+            resources: self.resources.build(),
+            reserve: self.reserve.into_iter().map(|b| b.build()).collect(),
+            aristocrats: self.aristocrats.into_iter().map(|b| b.build()).collect(),
+        }
+    }
+
+    // Getters
+    pub fn get_deck(&self) -> &Vec<CardBuilder> {
+        &self.deck
+    }
+
+    pub fn get_resources(&self) -> &ResourcesBuilder {
+        &self.resources
+    }
+
+    pub fn get_reserve(&self) -> &Vec<CardBuilder> {
+        &self.reserve
+    }
+
+    pub fn get_aristocrats(&self) -> &Vec<AristocratBuilder> {
+        &self.aristocrats
+    }
+
+    // Setters
+    pub fn set_deck(&mut self, deck: Vec<CardBuilder>) {
+        self.deck = deck;
+    }
+
+    pub fn set_resources(&mut self, resources: ResourcesBuilder) {
+        self.resources = resources;
+    }
+
+    pub fn set_reserve(&mut self, reserve: Vec<CardBuilder>) {
+        self.reserve = reserve;
+    }
+
+    pub fn set_aristocrats(&mut self, aristocrats: Vec<AristocratBuilder>) {
+        self.aristocrats = aristocrats;
     }
 }
