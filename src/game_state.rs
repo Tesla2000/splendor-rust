@@ -56,6 +56,10 @@ impl GameStateBuilder {
         }
     }
 
+    pub fn get_current_player(&mut self) -> &mut crate::player::PlayerBuilder {
+        &mut self.players[self.current_player_index]
+    }
+
     pub fn add_resources_to_player(&mut self, resources_builder: &ResourcesBuilder) {
         self.players[self.current_player_index].add_resources(resources_builder)
     }

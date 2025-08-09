@@ -55,16 +55,7 @@ impl Board {
         &self.resources
     }
     
-    pub fn take_card(&self, card_reference: &CardReference) -> Self {
-        let updated_row = self.rows.get_row(card_reference.get_row_index()).take_card(card_reference.get_card_index());
-        let updated_rows: Rows = self.rows.replace_row(updated_row, card_reference.get_row_index());
-        Self {
-            resources: self.resources.clone(),
-            rows: updated_rows,
-            aristocrats: self.aristocrats.clone(),       
-        }
-    }
-    
+
     pub fn to_builder(&self) -> BoardBuilder {
         BoardBuilder::new(self)
     }
@@ -73,7 +64,7 @@ impl Board {
 pub(crate) struct BoardBuilder {
     pub resources: crate::resources::ResourcesBuilder,
     pub rows: crate::board::rows::rows::RowsBuilder,
-    pub aristocrats: Vec<crate::aristocrat::AristocratBuilder>,
+    pub aristocrats: Vec<Aristocrat>,
 }
 
 impl BoardBuilder {
@@ -81,7 +72,7 @@ impl BoardBuilder {
         Self {
             resources: board.resources.to_builder(),
             rows: board.rows.to_builder(),
-            aristocrats: board.aristocrats.iter().map(|a| a.to_builder()).collect(),
+            aristocrats: board.aristocrats.clone(),
         }
     }
 
@@ -89,7 +80,7 @@ impl BoardBuilder {
         Board {
             resources: self.resources.build(),
             rows: self.rows.build(),
-            aristocrats: self.aristocrats.into_iter().map(|b| b.build()).collect(),
+            aristocrats: self.aristocrats,
         }
     }
 }

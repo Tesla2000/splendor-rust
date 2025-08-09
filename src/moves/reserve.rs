@@ -1,9 +1,6 @@
-use crate::card::card::Card;
-use crate::game_state::GameState;
-use crate::moves::_give_player_resources::give_player_resources;
-use crate::resources::Resources;
 use crate::board::rows::card_reference::CardReference;
-use crate::moves::_add_player_reserve::add_player_reserve;
+use crate::game_state::{GameState, GameStateBuilder};
+use crate::resources::Resources;
 
 struct Reserve {
     card_reference: CardReference,
@@ -22,8 +19,11 @@ impl Reserve {
     }
 
     pub fn perform(&self, game_state: &GameState) -> GameState {
-        add_player_reserve(&self.card_reference, game_state);
-        
+        let mut game_state_builder = GameStateBuilder::new(game_state);
+        game_state_builder.board.resources.n_gold -= 1;
+        game_state_builder.players[game_state_builder.current_player_index].resources.n_gold += 1;
+        game_state_builder.players[game_state_builder.current_player_index].reserve.push(game_state_builder.board.rows.get(self.card_reference.get_row_index()).remove(self.card_reference.get_card_index()));
+        game_state_builder.build()
     }
     
 }

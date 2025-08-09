@@ -4,46 +4,51 @@ use crate::moves::_give_player_resources::give_player_resources;
 use crate::resource::Resource;
 
 struct GetTwo{
-    resources: Cost
+    resources: Cost,
+    resource: Resource
 }
 
 impl GetTwo {
     pub fn new(resource: Resource) -> Self {
-        if resource == Resource::Green {
-            Self {
-                resources: Cost::new(2, 0, 0, 0, 0)
-            };
+        match resource {
+            Resource::Green => {Self {
+                resources: Cost::new(2, 0, 0, 0, 0),
+                resource: resource
+            }}
+            Resource::Red => {Self {
+                resources: Cost::new(0, 2, 0, 0, 0),
+                resource: resource
+            }}
+            Resource::Blue => {
+                Self {
+                    resources: Cost::new(0, 0, 2, 0, 0),
+                    resource: resource
+                }}
+            Resource::White => {
+                Self {
+                    resources: Cost::new(0, 0, 0, 2, 0),
+                    resource: resource
+                }}
+            Resource::Black => {            Self {
+                resources: Cost::new(0, 0, 0, 0, 2),
+                resource: resource
+            }}
         }
-        if resource == Resource::Red {
-            Self {
-                resources: Cost::new(0, 2, 0, 0, 0)
-            };
-        }
-        if resource == Resource::Blue {
-            Self {
-                resources: Cost::new(0, 0, 2, 0, 0)
-            };
-        }
-        if resource == Resource::White {
-            Self {
-                resources: Cost::new(0, 0, 0, 2, 0)
-            };
-        }
-        if resource == Resource::Black {
-            Self {
-                resources: Cost::new(0, 0, 0, 0, 2)
-            };
-        }
-        panic!("Invalid resource")
-        
     }
     
     pub fn is_valid(&self, game_state: &GameState) -> bool {
-        game_state.get_board().get_resources().pay_cost(&self.resources).can_pay(&self.resources) && game_state.get_current_player().can_add_resources(&self.resources.to_resources())
+        let at_least_four: bool;
+        match self.resource {
+            Resource::Green => {at_least_four = game_state.get_board().get_resources().n_green() >= 4;}
+            Resource::Red => {at_least_four = game_state.get_board().get_resources().n_red() >= 4;}
+            Resource::Blue => {at_least_four = game_state.get_board().get_resources().n_blue() >= 4;}
+            Resource::White => {at_least_four = game_state.get_board().get_resources().n_white() >= 4;}
+            Resource::Black => {at_least_four = game_state.get_board().get_resources().n_black() >= 4;}
+        }
+        at_least_four && game_state.get_current_player().can_add_resources(&self.resources.to_resources())
     }
 
     pub fn perform(&self, game_state: &GameState) -> GameState {
-        game_state.get_board().get_resources().pay_cost(&self.resources);
-        give_player_resources(&self.resources.to_resources(), game_state)
+        give_player_resources(&self.resources, game_state)
     }
 }

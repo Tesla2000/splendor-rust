@@ -23,18 +23,6 @@ impl Row {
         self.visible.len() < index
     }
 
-    pub fn take_card(&self, index: usize) -> Self {
-        let mut visible = self.visible.clone();
-        let mut hidden = self.hidden.clone();
-        visible.remove(index);
-        visible.push(hidden.remove(0));
-        Self{
-            visible,
-            hidden,       
-        }
-        
-    }
-
     pub fn get_card(&self, index: usize) -> &Card {
         &self.visible[index]
     }
@@ -45,22 +33,28 @@ impl Row {
 }
 
 pub(crate) struct RowBuilder {
-    pub visible: Vec<crate::card::card::CardBuilder>,
-    pub hidden: Vec<crate::card::card::CardBuilder>,
+    visible: Vec<Card>,
+    hidden: Vec<Card>,
 }
 
 impl RowBuilder {
     pub(crate) fn new(row: &Row) -> Self {
         Self {
-            visible: row.visible.iter().map(|c| c.to_builder()).collect(),
-            hidden: row.hidden.iter().map(|c| c.to_builder()).collect(),
+            visible: row.visible.clone(),
+            hidden: row.hidden.clone(),
         }
+    }
+
+    pub fn remove(&mut self, index: usize) -> Card {
+        let card = self.visible.remove(index);
+        self.visible.push(self.hidden.remove(0));
+        card
     }
 
     pub fn build(self) -> Row {
         Row {
-            visible: self.visible.into_iter().map(|b| b.build()).collect(),
-            hidden: self.hidden.into_iter().map(|b| b.build()).collect(),
+            visible: self.visible,
+            hidden: self.hidden,
         }
     }
 }

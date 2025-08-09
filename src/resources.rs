@@ -32,6 +32,19 @@ impl Resources {
             + max(0, cost.n_black() - self.n_black)
             + max(0, cost.n_white() - self.n_white)
     }
+
+
+
+    pub fn add(&self, other: &Self) -> Self {
+        Self {
+            n_green: self.n_green + other.n_green,
+            n_red: self.n_red + other.n_red,
+            n_blue: self.n_blue + other.n_blue,
+            n_black: self.n_black + other.n_black,
+            n_white: self.n_white + other.n_white,
+            n_gold: self.n_gold + other.n_gold,
+        }
+    }
     
     pub fn sum(&self) -> u8 {
         self.n_green + self.n_red + self.n_blue + self.n_white + self.n_black + self.n_gold
@@ -116,7 +129,7 @@ impl ResourcesBuilder {
         self.n_white += other.n_white;
         self.n_gold += other.n_gold;
     }
-    
+
     fn get_n_missing_resources(&self, cost: &Cost) -> u8 {
         max(0, cost.n_green() - self.n_green)
             + max(0, cost.n_red() - self.n_red)

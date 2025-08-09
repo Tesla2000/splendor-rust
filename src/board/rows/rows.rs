@@ -148,6 +148,23 @@ impl RowsBuilder {
             ),
         }
     }
+    
+    pub fn get(&mut self, index: u8) -> &mut crate::board::rows::row::RowBuilder {
+        match index {
+             0 => {&mut self.rows.0}
+             1 => {&mut self.rows.1}
+             2 => {&mut self.rows.2}
+            _ => {panic!("Invalid index");}
+        }
+    }
+    pub fn replace(&mut self, updated_row: crate::board::rows::row::RowBuilder, updated_row_index: u8) {
+        match updated_row_index {
+            0 => {self.rows.0 = updated_row;}
+            1 => {self.rows.1 = updated_row;}
+            2 => {self.rows.2 = updated_row;}
+            _ => {panic!("Invalid index");}
+        }
+    }
 
     pub fn build(self) -> Rows {
         Rows {
