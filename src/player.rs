@@ -1,8 +1,10 @@
 use crate::aristocrat::{Aristocrat, ARISTOCRAT_POINTS};
 use crate::card::card::Card;
+use crate::card::cost::Cost;
 use crate::resource::Resource;
 use crate::resources::{Resources, ResourcesBuilder};
 
+#[derive(Clone)]
 pub struct Player {
     deck: Vec<Card>,
     resources: Resources,
@@ -10,6 +12,7 @@ pub struct Player {
     aristocrats: Vec<Aristocrat>,
 }
 
+const MAX_RESERVE_CARDS: usize = 3;
 impl Player {
     pub fn new() -> Self {
         Self {
@@ -47,5 +50,22 @@ impl Player {
             card_points += card.n_points;
         }
         aristocrat_points + card_points
+    }
+
+    pub fn add_resources(&self, resources: &Resources) -> Self {
+        Self {
+            deck: self.deck.clone(),
+            resources: self.resources.add(resources),
+            reserve: self.reserve.clone(),
+            aristocrats: self.aristocrats.clone(),
+        }
+    }
+
+    pub fn can_add_resources(&self, resources: &Resources) -> bool {
+        self.resources.sum() + resources.sum() <= 10
+    }
+
+    pub fn can_add_reserve(&self) -> bool {
+        self.reserve.len() < MAX_RESERVE_CARDS
     }
 }

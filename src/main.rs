@@ -8,6 +8,7 @@ mod resources;
 mod aristocrat;
 mod board;
 mod game_state;
+mod moves;
 
 fn main() {
     let n_players: u8 = 2;

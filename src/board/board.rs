@@ -4,6 +4,7 @@ use crate::card::cost::Cost;
 use crate::resources::Resources;
 use rand::prelude::{SliceRandom, ThreadRng};
 
+#[derive(Clone)]
 pub struct Board {
     resources: Resources,
     rows: Rows,
@@ -39,5 +40,17 @@ impl Board {
             rows: Rows::new(rng),
             aristocrats: aristocrats.drain(0..n_aristocrats).collect(),
         }
+    }
+    
+    pub fn get_rows(&self) -> &Rows {
+        &self.rows
+    }
+    
+    pub fn get_aristocrats(&self) -> &Vec<Aristocrat> {
+        &self.aristocrats
+    }
+    
+    pub fn get_resources(&self) -> &Resources {
+        &self.resources
     }
 }

@@ -5,6 +5,7 @@ use crate::card::cost::Cost;
 use crate::card::tier::Tier;
 use crate::resource::Resource;
 
+#[derive(Clone)]
 pub(crate) struct Rows {
     rows: (Row, Row, Row),
 }
@@ -107,6 +108,15 @@ impl Rows {
                     Card::new(Cost::new(7, 3, 0, 0, 0), Resource::Red, 5, Tier::Third),
                 ], rng),
             ),
+        }
+    }
+    
+    pub fn get_row(&self, index: u8) -> &Row {
+        match index {
+            0 => {&self.rows.0}
+            1 => {&self.rows.1}
+            2 => {&self.rows.2}
+            _ => {panic!("Invalid index");}
         }
     }
 }

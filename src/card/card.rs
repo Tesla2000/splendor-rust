@@ -2,6 +2,7 @@ use crate::card::cost::Cost;
 use crate::card::tier::Tier;
 use crate::resource::Resource;
 
+#[derive(Clone)]
 pub struct Card {
     pub cost: Cost,
     pub production: Resource,

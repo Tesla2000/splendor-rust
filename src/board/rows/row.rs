@@ -3,6 +3,7 @@ use rand::seq::SliceRandom;
 use rand::rngs::ThreadRng;
 
 const CARD_COUNT: usize = 4;
+#[derive(Clone)]
 pub(crate) struct Row {
     visible: Vec<Card>,
     hidden: Vec<Card>,
