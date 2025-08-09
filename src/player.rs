@@ -1,4 +1,3 @@
-use std::cmp::max;
 use crate::aristocrat::{Aristocrat, ARISTOCRAT_POINTS};
 use crate::card::card::Card;
 use crate::card::cost::Cost;
@@ -124,11 +123,11 @@ impl PlayerBuilder {
     pub fn pay_for_card(&mut self, card: &Card) {
         let production = self.get_production();
         let remaining_cost = Cost::new(
-            max(0, card.cost.n_green() - production.n_green()),
-            max(0, card.cost.n_red() - production.n_red()),
-            max(0, card.cost.n_blue() - production.n_blue()),
-            max(0, card.cost.n_white() - production.n_white()),
-            max(0, card.cost.n_black() - production.n_black()),
+            card.cost.n_green().saturating_sub(production.n_green()),
+            card.cost.n_red().saturating_sub(production.n_red()),
+            card.cost.n_blue().saturating_sub(production.n_blue()),
+            card.cost.n_white().saturating_sub(production.n_white()),
+            card.cost.n_black().saturating_sub(production.n_black()),
         );
         self.resources.pay_cost(&remaining_cost)
     }

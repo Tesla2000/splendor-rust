@@ -3,6 +3,7 @@ use crate::board::board::Board;
 use crate::player::Player;
 use crate::resources::ResourcesBuilder;
 
+#[derive(Clone)]
 pub struct GameState {
     players: Vec<Player>,
     current_player_index: usize,

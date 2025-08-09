@@ -1,5 +1,4 @@
 use crate::card::cost::Cost;
-use std::cmp::max;
 use getset::Getters;
 #[derive(Clone)]
 pub struct Resources {
@@ -26,11 +25,11 @@ impl Resources {
         self.get_n_missing_resources(cost) <= self.n_gold
     }
     fn get_n_missing_resources(&self, cost: &Cost) -> u8 {
-        max(0, cost.n_green() - self.n_green)
-            + max(0, cost.n_red() - self.n_red)
-            + max(0, cost.n_blue() - self.n_blue)
-            + max(0, cost.n_black() - self.n_black)
-            + max(0, cost.n_white() - self.n_white)
+        cost.n_green().saturating_sub(self.n_green)
+            + cost.n_red().saturating_sub(self.n_red)
+            + cost.n_blue().saturating_sub(self.n_blue)
+            + cost.n_black().saturating_sub(self.n_black)
+            + cost.n_white().saturating_sub(self.n_white)
     }
 
 
@@ -110,14 +109,11 @@ impl ResourcesBuilder {
     pub fn pay_cost(&mut self, cost: &Cost) {
         // Assuming can pay
         let gold: u8 = self.n_gold - self.get_n_missing_resources(cost);
-        if gold < 0 {
-            panic!("Not enough gold to pay for this card");
-        }
-        self.n_green -= cost.n_green();
-        self.n_red -= cost.n_red();
-        self.n_blue -= cost.n_blue();
-        self.n_black -= cost.n_black();
-        self.n_white -= cost.n_white();
+        self.n_green = self.n_green.saturating_sub(cost.n_green());
+        self.n_red = self.n_red.saturating_sub(cost.n_red());
+        self.n_blue = self.n_blue.saturating_sub(cost.n_blue());
+        self.n_white = self.n_green.saturating_sub(cost.n_white());
+        self.n_black = self.n_green.saturating_sub(cost.n_black());
         self.n_gold = gold;
     }
 
@@ -131,10 +127,10 @@ impl ResourcesBuilder {
     }
 
     fn get_n_missing_resources(&self, cost: &Cost) -> u8 {
-        max(0, cost.n_green() - self.n_green)
-            + max(0, cost.n_red() - self.n_red)
-            + max(0, cost.n_blue() - self.n_blue)
-            + max(0, cost.n_black() - self.n_black)
-            + max(0, cost.n_white() - self.n_white)
+        cost.n_green().saturating_sub(self.n_green)
+            + cost.n_red().saturating_sub(self.n_red)
+            + cost.n_blue().saturating_sub(self.n_blue)
+            + cost.n_black().saturating_sub(self.n_black)
+            + cost.n_white().saturating_sub(self.n_white)
     }
 }

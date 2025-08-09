@@ -27,6 +27,7 @@ impl Move for BuildFromReserve {
         let card = player.reserve.remove(self.index);
         player.pay_for_card(&card);
         player.deck.push(card);
+        game_state_builder.current_player_index = (game_state_builder.current_player_index + 1) % game_state_builder.players.len();
         game_state_builder.build()
     }
 }

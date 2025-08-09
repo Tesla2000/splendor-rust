@@ -22,6 +22,7 @@ impl BuildCard {
         let player = game_state_builder.get_current_player();
         player.pay_for_card(&card);
         player.deck.push(card);
+        game_state_builder.current_player_index = (game_state_builder.current_player_index + 1) % game_state_builder.players.len();
         game_state_builder.build()
     }
 }

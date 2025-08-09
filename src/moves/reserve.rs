@@ -27,6 +27,7 @@ impl Move for Reserve {
         game_state_builder.board.resources.n_gold -= 1;
         game_state_builder.players[game_state_builder.current_player_index].resources.n_gold += 1;
         game_state_builder.players[game_state_builder.current_player_index].reserve.push(game_state_builder.board.rows.get(self.card_reference.get_row_index()).remove(self.card_reference.get_card_index()));
+        game_state_builder.current_player_index = (game_state_builder.current_player_index + 1) % game_state_builder.players.len();
         game_state_builder.build()
     }
 }
