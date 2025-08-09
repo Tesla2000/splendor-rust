@@ -1,21 +1,12 @@
 use crate::board::rows::card_reference::CardReference;
-use crate::game_state::GameState;
-use crate::moves::reserve::RESERVE_RESOURCES;
+use crate::card::card::Card;
+use crate::game_state::{GameState, GameStateBuilder};
 pub fn add_player_reserve(card_reference: &CardReference, game_state: &GameState) -> GameState {
-    let board = game_state.get_board();
-    let new_board = board.take_card(card_reference);
-    let new_board_resources = game_state.get_board().get_resources().remove_gold();
-    let mut new_players = Vec::new();
-    for (i, player) in game_state.get_players().iter().enumerate() {
-        if i == game_state.get_current_player_index() {
-            new_players.push(player.add_resources(&RESERVE_RESOURCES).add_reserve(card_reference.get_from_board(board)))
-        } else {
-            new_players.push(player.clone())
-        }
-    }
-    GameState::from_existing(
-        new_players,
-        game_state.get_current_player_index(),
-        game_state.get_board().clone(),
-    )
+    let mut game_state_builder = GameStateBuilder::new(game_state);
+    game_state_builder.board.resources.n_gold -= 1;
+    game_state_builder.players[game_state_builder.current_player_index].resources.n_gold += 1;
+    let card = card_reference.get_from_board(game_state.get_board());
+    game_state_builder.players[game_state_builder.current_player_index].reserve.push()
+    game_state_builder.add_resources_to_player(&resources.to_resources().to_builder());
+    game_state_builder.build()
 }

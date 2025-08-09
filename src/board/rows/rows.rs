@@ -1,6 +1,6 @@
 use rand::prelude::ThreadRng;
 use crate::board::rows::card_reference::CardReference;
-use crate::board::rows::row::{Row, RowBuilder};
+use crate::board::rows::row::Row;
 use crate::card::card::Card;
 use crate::card::cost::Cost;
 use crate::card::tier::Tier;
@@ -128,19 +128,23 @@ impl Rows {
             _ => {panic!("Invalid index");} 
         }
     }
+    
+    pub fn to_builder(&self) -> RowsBuilder {
+        RowsBuilder::new(self)
+    }
 }
 
 pub(crate) struct RowsBuilder {
-    rows: (RowBuilder, RowBuilder, RowBuilder),
+    pub rows: (crate::board::rows::row::RowBuilder, crate::board::rows::row::RowBuilder, crate::board::rows::row::RowBuilder),
 }
 
 impl RowsBuilder {
-    pub fn new(rows: Rows) -> Self {
+    pub(crate) fn new(rows: &Rows) -> Self {
         Self {
             rows: (
-                RowBuilder::new(rows.rows.0),
-                RowBuilder::new(rows.rows.1),
-                RowBuilder::new(rows.rows.2),
+                rows.rows.0.to_builder(),
+                rows.rows.1.to_builder(),
+                rows.rows.2.to_builder(),
             ),
         }
     }
@@ -153,31 +157,5 @@ impl RowsBuilder {
                 self.rows.2.build(),
             ),
         }
-    }
-
-    // Getters
-    pub fn get_row_0(&self) -> &RowBuilder {
-        &self.rows.0
-    }
-
-    pub fn get_row_1(&self) -> &RowBuilder {
-        &self.rows.1
-    }
-
-    pub fn get_row_2(&self) -> &RowBuilder {
-        &self.rows.2
-    }
-
-    // Setters
-    pub fn set_row_0(&mut self, row: RowBuilder) {
-        self.rows.0 = row;
-    }
-
-    pub fn set_row_1(&mut self, row: RowBuilder) {
-        self.rows.1 = row;
-    }
-
-    pub fn set_row_2(&mut self, row: RowBuilder) {
-        self.rows.2 = row;
     }
 }

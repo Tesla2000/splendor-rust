@@ -1,6 +1,5 @@
-use crate::aristocrat::{Aristocrat, AristocratBuilder, ARISTOCRAT_POINTS};
-use crate::card::card::{Card, CardBuilder};
-use crate::card::cost::Cost;
+use crate::aristocrat::{Aristocrat, ARISTOCRAT_POINTS};
+use crate::card::card::Card;
 use crate::resource::Resource;
 use crate::resources::{Resources, ResourcesBuilder};
 
@@ -52,15 +51,6 @@ impl Player {
         aristocrat_points + card_points
     }
 
-    pub fn add_resources(&self, resources: &Resources) -> Self {
-        Self {
-            deck: self.deck.clone(),
-            resources: self.resources.add(resources),
-            reserve: self.reserve.clone(),
-            aristocrats: self.aristocrats.clone(),
-        }
-    }
-
     pub fn can_add_resources(&self, resources: &Resources) -> bool {
         self.resources.sum() + resources.sum() <= 10
     }
@@ -79,25 +69,33 @@ impl Player {
             aristocrats: self.aristocrats.clone(),
         }
     }
+    
+    pub fn to_builder(&self) -> PlayerBuilder {
+        PlayerBuilder::new(self)
+    }
 }
 
-pub struct PlayerBuilder {
-    deck: Vec<CardBuilder>,
-    resources: ResourcesBuilder,
-    reserve: Vec<CardBuilder>,
-    aristocrats: Vec<AristocratBuilder>,
+pub(crate) struct PlayerBuilder {
+    pub deck: Vec<crate::card::card::CardBuilder>,
+    pub resources: crate::resources::ResourcesBuilder,
+    pub reserve: Vec<crate::card::card::CardBuilder>,
+    pub aristocrats: Vec<crate::aristocrat::AristocratBuilder>,
 }
 
 impl PlayerBuilder {
-    pub fn new(player: Player) -> Self {
+    fn new(player: &Player) -> Self {
         Self {
-            deck: player.deck.into_iter().map(CardBuilder::new).collect(),
-            resources: ResourcesBuilder::new(player.resources),
-            reserve: player.reserve.into_iter().map(CardBuilder::new).collect(),
-            aristocrats: player.aristocrats.into_iter().map(AristocratBuilder::new).collect(),
+            deck: player.deck.iter().map(|c| c.to_builder()).collect(),
+            resources: player.resources.to_builder(),
+            reserve: player.reserve.iter().map(|c| c.to_builder()).collect(),
+            aristocrats: player.aristocrats.iter().map(|a| a.to_builder()).collect(),
         }
     }
 
+    pub fn add_resources(&mut self, resources: &ResourcesBuilder) {
+        self.resources.add(resources)
+    }
+    
     pub fn build(self) -> Player {
         Player {
             deck: self.deck.into_iter().map(|b| b.build()).collect(),
@@ -105,39 +103,5 @@ impl PlayerBuilder {
             reserve: self.reserve.into_iter().map(|b| b.build()).collect(),
             aristocrats: self.aristocrats.into_iter().map(|b| b.build()).collect(),
         }
-    }
-
-    // Getters
-    pub fn get_deck(&self) -> &Vec<CardBuilder> {
-        &self.deck
-    }
-
-    pub fn get_resources(&self) -> &ResourcesBuilder {
-        &self.resources
-    }
-
-    pub fn get_reserve(&self) -> &Vec<CardBuilder> {
-        &self.reserve
-    }
-
-    pub fn get_aristocrats(&self) -> &Vec<AristocratBuilder> {
-        &self.aristocrats
-    }
-
-    // Setters
-    pub fn set_deck(&mut self, deck: Vec<CardBuilder>) {
-        self.deck = deck;
-    }
-
-    pub fn set_resources(&mut self, resources: ResourcesBuilder) {
-        self.resources = resources;
-    }
-
-    pub fn set_reserve(&mut self, reserve: Vec<CardBuilder>) {
-        self.reserve = reserve;
-    }
-
-    pub fn set_aristocrats(&mut self, aristocrats: Vec<AristocratBuilder>) {
-        self.aristocrats = aristocrats;
     }
 }

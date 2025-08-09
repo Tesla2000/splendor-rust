@@ -1,19 +1,9 @@
 use crate::card::cost::Cost;
-use crate::game_state::GameState;
+use crate::game_state::{GameState, GameStateBuilder};
 
 pub fn give_player_resources(resources: &Cost, game_state: &GameState) -> GameState {
-    game_state.get_board().get_resources().pay_cost(resources);
-    let mut new_players = Vec::new();
-    for (i, player) in game_state.get_players().iter().enumerate() {
-        if i == game_state.get_current_player_index() {
-            new_players.push(player.add_resources(&resources.to_resources()))
-        } else {
-            new_players.push(player.clone())
-        }
-    }
-    GameState::from_existing(
-        new_players,
-        game_state.get_current_player_index(),
-        game_state.get_board().clone(),
-    )
+    let mut game_state_builder = GameStateBuilder::new(game_state);
+    game_state_builder.board.resources.pay_cost(resources);
+    game_state_builder.add_resources_to_player(&resources.to_resources().to_builder());
+    game_state_builder.build()
 }

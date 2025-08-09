@@ -1,4 +1,4 @@
-use crate::card::card::{Card, CardBuilder};
+use crate::card::card::Card;
 use rand::seq::SliceRandom;
 use rand::rngs::ThreadRng;
 
@@ -38,18 +38,22 @@ impl Row {
     pub fn get_card(&self, index: usize) -> &Card {
         &self.visible[index]
     }
+    
+    pub fn to_builder(&self) -> RowBuilder {
+        RowBuilder::new(self)
+    }
 }
 
 pub(crate) struct RowBuilder {
-    visible: Vec<CardBuilder>,
-    hidden: Vec<CardBuilder>,
+    pub visible: Vec<crate::card::card::CardBuilder>,
+    pub hidden: Vec<crate::card::card::CardBuilder>,
 }
 
 impl RowBuilder {
-    pub fn new(row: Row) -> Self {
+    pub(crate) fn new(row: &Row) -> Self {
         Self {
-            visible: row.visible.into_iter().map(CardBuilder::new).collect(),
-            hidden: row.hidden.into_iter().map(CardBuilder::new).collect(),
+            visible: row.visible.iter().map(|c| c.to_builder()).collect(),
+            hidden: row.hidden.iter().map(|c| c.to_builder()).collect(),
         }
     }
 
@@ -58,23 +62,5 @@ impl RowBuilder {
             visible: self.visible.into_iter().map(|b| b.build()).collect(),
             hidden: self.hidden.into_iter().map(|b| b.build()).collect(),
         }
-    }
-
-    // Getters
-    pub fn get_visible(&self) -> &Vec<CardBuilder> {
-        &self.visible
-    }
-
-    pub fn get_hidden(&self) -> &Vec<CardBuilder> {
-        &self.hidden
-    }
-
-    // Setters
-    pub fn set_visible(&mut self, visible: Vec<CardBuilder>) {
-        self.visible = visible;
-    }
-
-    pub fn set_hidden(&mut self, hidden: Vec<CardBuilder>) {
-        self.hidden = hidden;
     }
 }

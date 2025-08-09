@@ -1,7 +1,7 @@
-use crate::aristocrat::{Aristocrat, AristocratBuilder};
-use crate::board::rows::rows::{Rows, RowsBuilder};
+use crate::aristocrat::Aristocrat;
+use crate::board::rows::rows::Rows;
 use crate::card::cost::Cost;
-use crate::resources::{Resources, ResourcesBuilder};
+use crate::resources::Resources;
 use rand::prelude::{SliceRandom, ThreadRng};
 use crate::board::rows::card_reference::CardReference;
 
@@ -64,20 +64,24 @@ impl Board {
             aristocrats: self.aristocrats.clone(),       
         }
     }
+    
+    pub fn to_builder(&self) -> BoardBuilder {
+        BoardBuilder::new(self)
+    }
 }
 
-pub struct BoardBuilder {
-    resources: ResourcesBuilder,
-    rows: RowsBuilder,
-    aristocrats: Vec<AristocratBuilder>,
+pub(crate) struct BoardBuilder {
+    pub resources: crate::resources::ResourcesBuilder,
+    pub rows: crate::board::rows::rows::RowsBuilder,
+    pub aristocrats: Vec<crate::aristocrat::AristocratBuilder>,
 }
 
 impl BoardBuilder {
-    pub fn new(board: Board) -> Self {
+    fn new(board: &Board) -> Self {
         Self {
-            resources: ResourcesBuilder::new(board.resources),
-            rows: RowsBuilder::new(board.rows),
-            aristocrats: board.aristocrats.into_iter().map(AristocratBuilder::new).collect(),
+            resources: board.resources.to_builder(),
+            rows: board.rows.to_builder(),
+            aristocrats: board.aristocrats.iter().map(|a| a.to_builder()).collect(),
         }
     }
 
@@ -87,31 +91,5 @@ impl BoardBuilder {
             rows: self.rows.build(),
             aristocrats: self.aristocrats.into_iter().map(|b| b.build()).collect(),
         }
-    }
-
-    // Getters
-    pub fn get_resources(&self) -> &ResourcesBuilder {
-        &self.resources
-    }
-
-    pub fn get_rows(&self) -> &RowsBuilder {
-        &self.rows
-    }
-
-    pub fn get_aristocrats(&self) -> &Vec<AristocratBuilder> {
-        &self.aristocrats
-    }
-
-    // Setters
-    pub fn set_resources(&mut self, resources: ResourcesBuilder) {
-        self.resources = resources;
-    }
-
-    pub fn set_rows(&mut self, rows: RowsBuilder) {
-        self.rows = rows;
-    }
-
-    pub fn set_aristocrats(&mut self, aristocrats: Vec<AristocratBuilder>) {
-        self.aristocrats = aristocrats;
     }
 }

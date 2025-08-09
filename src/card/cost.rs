@@ -52,18 +52,22 @@ impl Cost {
     pub fn n_black(&self) -> u8 {
         self.n_black
     }
+    
+    pub fn to_builder(&self) -> CostBuilder {
+        CostBuilder::new(self)
+    }
 }
 
-pub struct CostBuilder {
-    n_green: u8,
-    n_red: u8,
-    n_blue: u8,
-    n_white: u8,
-    n_black: u8,
+pub(crate) struct CostBuilder {
+    pub n_green: u8,
+    pub n_red: u8,
+    pub n_blue: u8,
+    pub n_white: u8,
+    pub n_black: u8,
 }
 
 impl CostBuilder {
-    pub fn new(cost: Cost) -> Self {
+    fn new(cost: &Cost) -> Self {
         Self {
             n_green: cost.n_green,
             n_red: cost.n_red,
@@ -81,47 +85,5 @@ impl CostBuilder {
             n_white: self.n_white,
             n_black: self.n_black,
         }
-    }
-
-    // Getters
-    pub fn get_n_green(&self) -> u8 {
-        self.n_green
-    }
-
-    pub fn get_n_red(&self) -> u8 {
-        self.n_red
-    }
-
-    pub fn get_n_blue(&self) -> u8 {
-        self.n_blue
-    }
-
-    pub fn get_n_white(&self) -> u8 {
-        self.n_white
-    }
-
-    pub fn get_n_black(&self) -> u8 {
-        self.n_black
-    }
-
-    // Setters
-    pub fn set_n_green(&mut self, n_green: u8) {
-        self.n_green = n_green;
-    }
-
-    pub fn set_n_red(&mut self, n_red: u8) {
-        self.n_red = n_red;
-    }
-
-    pub fn set_n_blue(&mut self, n_blue: u8) {
-        self.n_blue = n_blue;
-    }
-
-    pub fn set_n_white(&mut self, n_white: u8) {
-        self.n_white = n_white;
-    }
-
-    pub fn set_n_black(&mut self, n_black: u8) {
-        self.n_black = n_black;
     }
 }

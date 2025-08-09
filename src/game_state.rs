@@ -1,6 +1,7 @@
 use rand::prelude::ThreadRng;
-use crate::board::board::{Board, BoardBuilder};
-use crate::player::{Player, PlayerBuilder};
+use crate::board::board::Board;
+use crate::player::Player;
+use crate::resources::ResourcesBuilder;
 
 pub struct GameState {
     players: Vec<Player>,
@@ -9,13 +10,6 @@ pub struct GameState {
 }
 
 impl GameState {
-    pub fn from_existing(players: Vec<Player>, current_player_index: usize, board: Board) -> Self {
-        Self {
-            players: players,
-            current_player_index: current_player_index,
-            board: board,
-        }
-    }
     pub fn get_board(&self) -> &Board {
         &self.board
     }
@@ -28,6 +22,10 @@ impl GameState {
     }
     pub fn get_current_player(&self) -> &Player {
         &self.players.get(self.current_player_index).unwrap()
+    }
+    
+    pub fn to_builder(&self) -> GameStateBuilder {
+        GameStateBuilder::new(self)
     }
 }
 
@@ -44,18 +42,22 @@ pub fn create_initial_game_state(n_players: u8, rng: &mut ThreadRng) -> GameStat
 }
 
 pub struct GameStateBuilder {
-    players: Vec<PlayerBuilder>,
-    current_player_index: usize,
-    board: BoardBuilder,
+    pub players: Vec<crate::player::PlayerBuilder>,
+    pub current_player_index: usize,
+    pub board: crate::board::board::BoardBuilder,
 }
 
 impl GameStateBuilder {
-    pub fn new(game_state: GameState) -> Self {
+    pub fn new(game_state: &GameState) -> Self {
         Self {
-            players: game_state.players.into_iter().map(PlayerBuilder::new).collect(),
+            players: game_state.players.iter().map(|p| p.to_builder()).collect(),
             current_player_index: game_state.current_player_index,
-            board: BoardBuilder::new(game_state.board),
+            board: game_state.board.to_builder(),
         }
+    }
+
+    pub fn add_resources_to_player(&mut self, resources_builder: &ResourcesBuilder) {
+        self.players[self.current_player_index].add_resources(resources_builder)
     }
 
     pub fn build(self) -> GameState {
@@ -64,31 +66,5 @@ impl GameStateBuilder {
             current_player_index: self.current_player_index,
             board: self.board.build(),
         }
-    }
-
-    // Getters
-    pub fn get_players(&self) -> &Vec<PlayerBuilder> {
-        &self.players
-    }
-
-    pub fn get_current_player_index(&self) -> usize {
-        self.current_player_index
-    }
-
-    pub fn get_board(&self) -> &BoardBuilder {
-        &self.board
-    }
-
-    // Setters
-    pub fn set_players(&mut self, players: Vec<PlayerBuilder>) {
-        self.players = players;
-    }
-
-    pub fn set_current_player_index(&mut self, current_player_index: usize) {
-        self.current_player_index = current_player_index;
-    }
-
-    pub fn set_board(&mut self, board: BoardBuilder) {
-        self.board = board;
     }
 }

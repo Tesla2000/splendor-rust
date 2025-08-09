@@ -1,4 +1,4 @@
-use crate::card::cost::{Cost, CostBuilder};
+use crate::card::cost::Cost;
 use crate::player::Player;
 use crate::resources::Resources;
 
@@ -16,16 +16,20 @@ impl Aristocrat {
     pub fn can_be_taken_by(&self, player: &Player) -> bool {
         player.get_production().can_pay(&self.cost)
     }
+    
+    pub fn to_builder(&self) -> AristocratBuilder {
+        AristocratBuilder::new(self)
+    }
 }
 
-pub struct AristocratBuilder {
-    cost: CostBuilder,
+pub(crate) struct AristocratBuilder {
+    pub cost: crate::card::cost::CostBuilder,
 }
 
 impl AristocratBuilder {
-    pub fn new(aristocrat: Aristocrat) -> Self {
+    fn new(aristocrat: &Aristocrat) -> Self {
         Self {
-            cost: CostBuilder::new(aristocrat.cost),
+            cost: aristocrat.cost.to_builder(),
         }
     }
 
@@ -33,15 +37,5 @@ impl AristocratBuilder {
         Aristocrat {
             cost: self.cost.build(),
         }
-    }
-
-    // Getters
-    pub fn get_cost(&self) -> &CostBuilder {
-        &self.cost
-    }
-
-    // Setters
-    pub fn set_cost(&mut self, cost: CostBuilder) {
-        self.cost = cost;
     }
 }
