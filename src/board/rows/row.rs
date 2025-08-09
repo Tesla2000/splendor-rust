@@ -18,4 +18,24 @@ impl Row {
             hidden: cards,
         }
     }
+
+    pub fn has_card(&self, index: usize) -> bool {
+        self.visible.len() < index
+    }
+
+    pub fn take_card(&self, index: usize) -> Self {
+        let mut visible = self.visible.clone();
+        let mut hidden = self.hidden.clone();
+        visible.remove(index);
+        visible.push(hidden.remove(0));
+        Self{
+            visible,
+            hidden,       
+        }
+        
+    }
+
+    pub fn get_card(&self, index: usize) -> &Card {
+        &self.visible[index]
+    }
 }

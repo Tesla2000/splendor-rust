@@ -3,6 +3,7 @@ use crate::board::rows::rows::Rows;
 use crate::card::cost::Cost;
 use crate::resources::Resources;
 use rand::prelude::{SliceRandom, ThreadRng};
+use crate::board::rows::card_reference::CardReference;
 
 #[derive(Clone)]
 pub struct Board {
@@ -52,5 +53,15 @@ impl Board {
     
     pub fn get_resources(&self) -> &Resources {
         &self.resources
+    }
+    
+    pub fn take_card(&self, card_reference: &CardReference) -> Self {
+        let updated_row = self.rows.get_row(card_reference.get_row_index()).take_card(card_reference.get_card_index());
+        let updated_rows: Rows = self.rows.replace_row(updated_row, card_reference.get_row_index());
+        Self {
+            resources: self.resources.clone(),
+            rows: updated_rows,
+            aristocrats: self.aristocrats.clone(),       
+        }
     }
 }

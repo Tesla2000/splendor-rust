@@ -32,7 +32,7 @@ impl Resources {
             + max(0, cost.n_black() - self.n_black)
             + max(0, cost.n_white() - self.n_white)
     }
-    pub fn pay(&self, cost: &Cost) -> Self {
+    pub fn pay_cost(&self, cost: &Cost) -> Self {
         // Assuming can pay
         let gold: u8 = self.n_gold - self._get_n_missing_resources(cost);
         if gold < 0 {
@@ -47,6 +47,20 @@ impl Resources {
             n_gold: gold,
         }
     }
+    pub fn remove_gold(&self) -> Self {
+        if self.n_gold < 1 {
+            panic!("Not enough gold to remove");
+        }
+        Self {
+            n_green: self.n_green,
+            n_red: self.n_red,
+            n_blue: self.n_blue,
+            n_black: self.n_black,
+            n_white: self.n_white,
+            n_gold: self.n_gold - 1,
+        }
+    }
+    
     pub fn sum(&self) -> u8 {
         self.n_green + self.n_red + self.n_blue + self.n_white + self.n_black + self.n_gold
     }

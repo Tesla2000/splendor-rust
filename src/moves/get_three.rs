@@ -42,7 +42,6 @@ impl GetThree {
     }
 
     pub fn perform(&self, game_state: &GameState) -> GameState {
-        game_state.get_board().get_resources().pay(&self.resources);
-        give_player_resources(&self.resources.to_resources(), game_state)
+        give_player_resources(&self.resources, game_state)
     }
 }

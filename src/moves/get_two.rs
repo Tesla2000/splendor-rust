@@ -39,11 +39,11 @@ impl GetTwo {
     }
     
     pub fn is_valid(&self, game_state: &GameState) -> bool {
-        game_state.get_board().get_resources().pay(&self.resources).can_pay(&self.resources) && game_state.get_current_player().can_add_resources(&self.resources.to_resources())
+        game_state.get_board().get_resources().pay_cost(&self.resources).can_pay(&self.resources) && game_state.get_current_player().can_add_resources(&self.resources.to_resources())
     }
 
     pub fn perform(&self, game_state: &GameState) -> GameState {
-        game_state.get_board().get_resources().pay(&self.resources);
+        game_state.get_board().get_resources().pay_cost(&self.resources);
         give_player_resources(&self.resources.to_resources(), game_state)
     }
 }

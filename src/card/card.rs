@@ -11,7 +11,7 @@ pub struct Card {
 }
 
 impl Card {
-    pub(crate) fn new(
+    pub(crate) const  fn new(
         cost: Cost,
         production: Resource,
         n_points: u8,
@@ -25,3 +25,5 @@ impl Card {
         }
     }
 }
+
+const NULL_CARD: Card = Card::new(Cost::new(0, 0, 0, 0, 0), Resource::Green, 0, Tier::First);

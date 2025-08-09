@@ -1,4 +1,5 @@
 use rand::prelude::ThreadRng;
+use crate::board::rows::card_reference::CardReference;
 use crate::board::rows::row::Row;
 use crate::card::card::Card;
 use crate::card::cost::Cost;
@@ -117,6 +118,14 @@ impl Rows {
             1 => {&self.rows.1}
             2 => {&self.rows.2}
             _ => {panic!("Invalid index");}
+        }
+    }
+    pub fn replace_row(&self, updated_row: Row, updated_row_index: u8) -> Self {
+        match updated_row_index { 
+            0 => {Self {rows: (updated_row, self.rows.1.clone(), self.rows.2.clone())}}
+            1 => {Self {rows: (self.rows.0.clone(), updated_row, self.rows.2.clone())}}
+            2 => {Self {rows: (self.rows.0.clone(), self.rows.1.clone(), updated_row)}}
+            _ => {panic!("Invalid index");} 
         }
     }
 }

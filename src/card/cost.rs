@@ -10,7 +10,7 @@ pub struct Cost {
 }
 
 impl Cost {
-    pub(crate) fn new(
+    pub(crate) const  fn new(
         n_green: u8,
         n_red: u8,
         n_blue: u8,

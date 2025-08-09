@@ -1,19 +1,23 @@
+use crate::board::board::Board;
 use crate::card::card::Card;
-use crate::game_state::GameState;
-use crate::board::rows::row::Row;
 
-struct CardReference {
+pub(crate) struct CardReference {
     row_index: u8,
-    card_index: u8,
+    card_index: usize,
 }
 
 impl CardReference {
-    pub fn seek_in_board(&self, game_state: &GameState) -> &Card {
-        let row: &Row;
-        match self.row_index { 
-            0 => {game_state.get_board().get_rows().get_row(self.row_index)}
-            _ => {panic!("Not implemented")} 
-        }
-        
+    pub fn get_from_board<'a>(&self, board: &'a Board) -> &'a Card {
+        board.get_rows().get_row(self.row_index).get_card(self.card_index)
+    }
+    pub fn is_in_board(&self, board: &Board) -> bool {
+        board.get_rows().get_row(self.row_index).has_card(self.card_index)
+    }
+    
+    pub fn get_row_index(&self) -> u8 {
+        self.row_index
+    }
+    pub fn get_card_index(&self) -> usize {
+        self.card_index
     }
 }
