@@ -1,0 +1,45 @@
+use crate::moves::get_three::GetThree;
+use crate::moves::get_two::GetTwo;
+use crate::moves::reserve::Reserve;
+use crate::moves::build_from_reserve::BuildFromReserve;
+use crate::moves::move_trait::Move;
+use crate::resource::Resource;
+use crate::board::rows::card_reference::CardReference;
+
+pub fn get_all_moves() -> Vec<Box<dyn Move>> {
+    let mut moves: Vec<Box<dyn Move>> = Vec::new();
+    
+    // Get 3 resources - all unique combinations (except gold)
+    // There are C(5,3) = 10 combinations
+    moves.push(Box::new(GetThree::new(Resource::Green, Resource::Blue, Resource::Red)));
+    moves.push(Box::new(GetThree::new(Resource::Green, Resource::Blue, Resource::White)));
+    moves.push(Box::new(GetThree::new(Resource::Green, Resource::Blue, Resource::Black)));
+    moves.push(Box::new(GetThree::new(Resource::Green, Resource::Red, Resource::White)));
+    moves.push(Box::new(GetThree::new(Resource::Green, Resource::Red, Resource::Black)));
+    moves.push(Box::new(GetThree::new(Resource::Green, Resource::White, Resource::Black)));
+    moves.push(Box::new(GetThree::new(Resource::Blue, Resource::Red, Resource::White)));
+    moves.push(Box::new(GetThree::new(Resource::Blue, Resource::Red, Resource::Black)));
+    moves.push(Box::new(GetThree::new(Resource::Blue, Resource::White, Resource::Black)));
+    moves.push(Box::new(GetThree::new(Resource::Red, Resource::White, Resource::Black)));
+    
+    // Get 2 resources of each type (except gold)
+    moves.push(Box::new(GetTwo::new(Resource::Green)));
+    moves.push(Box::new(GetTwo::new(Resource::Blue)));
+    moves.push(Box::new(GetTwo::new(Resource::Red)));
+    moves.push(Box::new(GetTwo::new(Resource::White)));
+    moves.push(Box::new(GetTwo::new(Resource::Black)));
+    
+    // Reserve any card - tier index 0-2, card index 0-3
+    for tier_index in 0..=2 {
+        for card_index in 0..=3 {
+            moves.push(Box::new(Reserve::new(CardReference::new(tier_index, card_index))));
+        }
+    }
+    
+    // Build from reserve - index 0-3
+    for index in 0..=3 {
+        moves.push(Box::new(BuildFromReserve::new(index)));
+    }
+    
+    moves
+}

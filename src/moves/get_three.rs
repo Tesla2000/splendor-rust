@@ -2,8 +2,9 @@ use crate::card::cost::Cost;
 use crate::game_state::GameState;
 use crate::moves::_give_player_resources::give_player_resources;
 use crate::resource::Resource;
+use crate::moves::move_trait::Move;
 
-struct GetThree{
+pub(crate) struct GetThree{
     resources: Cost
 }
 
@@ -37,11 +38,14 @@ impl GetThree {
         }
     }
 
-    pub fn is_valid(&self, game_state: &GameState) -> bool {
+}
+
+impl Move for GetThree {
+    fn is_valid(&self, game_state: &GameState) -> bool {
         game_state.get_board().get_resources().can_pay(&self.resources) && game_state.get_current_player().can_add_resources(&self.resources.to_resources())
     }
 
-    pub fn perform(&self, game_state: &GameState) -> GameState {
+    fn perform(&self, game_state: &GameState) -> GameState {
         give_player_resources(&self.resources, game_state)
     }
 }

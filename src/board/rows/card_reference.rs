@@ -7,6 +7,15 @@ pub(crate) struct CardReference {
 }
 
 impl CardReference {
+    pub(crate) fn new(row_index: u8, card_index: usize) -> Self {
+        Self {
+            row_index: row_index,
+            card_index: card_index,
+        }
+    }
+}
+
+impl CardReference {
     pub fn get_from_board<'a>(&self, board: &'a Board) -> &'a Card {
         board.get_rows().get_row(self.row_index).get_card(self.card_index)
     }

@@ -1,7 +1,8 @@
-mod get_three;
-mod get_two;
-mod reserve;
+pub mod move_trait;
+pub mod get_three;
+pub mod get_two;
+pub mod reserve;
 mod _give_player_resources;
-mod build_card;
-mod build_from_reserve;
-mod all_moves;
+pub mod build_card;
+pub mod build_from_reserve;
+pub mod all_moves;
