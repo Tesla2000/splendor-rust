@@ -11,6 +11,7 @@ use crate::moves::reserve_from_hidden::ReserveFromHidden;
 
 pub struct AllMoves {
     moves: Vec<Box<dyn Move>>,
+    n_moves: usize,
 }
 
 impl AllMoves {
@@ -53,12 +54,16 @@ impl AllMoves {
         for index in 0..=3 {
             moves.push(Box::new(BuildFromReserve::new(index)));
         }
-        
-        Self { moves }
+        let n_moves = moves.len();
+        Self { moves, n_moves }
     }
     
     pub fn get_all(&self) -> &Vec<Box<dyn Move>> {
         &self.moves
+    }
+    
+    pub fn n_moves(&self) -> usize {
+        self.n_moves
     }
 }
 
@@ -69,4 +74,8 @@ static ALL_MOVES: Lazy<AllMoves> = Lazy::new(AllMoves::new);
 
 pub fn get_all_moves() -> &'static Vec<Box<dyn Move>> {
     ALL_MOVES.get_all()
+}
+
+pub fn get_n_moves() -> usize {
+    ALL_MOVES.n_moves()
 }

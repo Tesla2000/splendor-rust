@@ -3,7 +3,7 @@ use std::rc::{Rc, Weak};
 use rand::prelude::SliceRandom;
 use rand::rngs::ThreadRng;
 use crate::game_state::GameState;
-use crate::moves::all_moves::{get_all_moves};
+use crate::moves::all_moves::{get_all_moves, get_n_moves};
 
 pub struct Node {
     pub game_state: GameState,
@@ -11,7 +11,8 @@ pub struct Node {
     pub visits: u32,
     pub parent: Weak<RefCell<Node>>,
     pub children: Vec<Rc<RefCell<Node>>>,
-    pub move_order: Vec<usize>,
+    move_order: Vec<usize>,
+    pub next_move_to_perform: usize,
 }
 impl Node {
     pub fn new(game_state: GameState, rng: &mut ThreadRng) -> Rc<RefCell<Node>> {
@@ -22,6 +23,7 @@ impl Node {
             parent: Weak::new(),
             children: Vec::new(),
             move_order: Node::random_move_order(rng),
+            next_move_to_perform: 0,
         }))
     }
 
@@ -37,17 +39,22 @@ impl Node {
             parent: Rc::downgrade(parent),
             children: Vec::new(),
             move_order: Node::random_move_order(rng),
+            next_move_to_perform: 0,
         }));
         parent.borrow_mut().children.push(Rc::clone(&child));
         child
     }
-    
+
     fn random_move_order(rng: &mut ThreadRng) -> Vec<usize> {
-        let mut move_order: Vec<usize> = (1..=get_all_moves().len()).collect();
+        let mut move_order: Vec<usize> = (0..get_n_moves()).collect();
         move_order.shuffle(rng);
         move_order
     }
-    
+
+    pub fn move_order(&self) -> &Vec<usize> {
+        &self.move_order
+    }
+
     pub fn get_game_state(&self) -> &GameState {
         &self.game_state
     }

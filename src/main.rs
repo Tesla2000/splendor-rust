@@ -1,5 +1,5 @@
 use crate::game_state::create_initial_game_state;
-use crate::moves::all_moves::get_all_moves;
+use crate::moves::all_moves::{get_all_moves, get_n_moves};
 use crate::moves::move_trait::Move;
 use crate::node::Node;
 use rand::rngs::ThreadRng;
@@ -61,9 +61,9 @@ fn main() {
 fn roolout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut ThreadRng, print: bool){
     let mut current_owned = Rc::clone(current);
     loop {
-        let n_visits = current_owned.borrow().visits;
-        if n_visits == 0 {
-            if !expand_tree(&current_owned, all_moves, rng) {
+        let next_move_to_perform = current_owned.borrow().next_move_to_perform;
+        if next_move_to_perform < get_n_moves() {
+            if !add_leaf(&current_owned, all_moves, rng) {
                 if print {
                     println!("No valid moves");
                 }
@@ -71,7 +71,7 @@ fn roolout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mu
                 break;
             }
         }
-        let leaf_index = get_expanded_leaf_index(&current_owned, rng);
+        let leaf_index = get_expanded_leaf_index(&current_owned);
 
         let children_count = current_owned.borrow().children.len();
         if children_count > 0 {
@@ -102,31 +102,38 @@ fn roolout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mu
     }
 }
 /// False if there are no valid moves
-fn expand_tree(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut ThreadRng) -> bool {
-    let valid_moves: Vec<_> = all_moves
-        .iter()
-        .filter(|m| m.is_valid(current.borrow().get_game_state()))
-        .collect();
-
-    for m in &valid_moves {
-        let new_state = m.perform(current.borrow().get_game_state());
+fn add_leaf(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut ThreadRng) -> bool {
+    let (next_move_to_perform, valid_move_data) = {
+        let current_node = current.borrow();
+        let next_move_to_perform = current_node.next_move_to_perform;
+        
+        let valid_move = all_moves
+            .iter()
+            .enumerate()
+            .skip(next_move_to_perform)
+            .find(|(_, m)| m.is_valid(current_node.get_game_state()));
+        
+        (next_move_to_perform, valid_move)
+    };
+    
+    let valid_moves = next_move_to_perform > 0 || valid_move_data.is_some();
+    
+    if let Some((index, m)) = valid_move_data {
+        let new_state = m.perform(&current.borrow().game_state);
         Node::add_child(current, new_state, rng);
+        current.borrow_mut().next_move_to_perform = index;
     }
-    !valid_moves.is_empty()
+    
+    valid_moves
 }
 
-fn get_expanded_leaf_index(node_ref: &Rc<RefCell<Node>>, rng: &mut ThreadRng) -> usize {
+fn get_expanded_leaf_index(node_ref: &Rc<RefCell<Node>>) -> usize {
     let node = node_ref.borrow();
-    let not_visited_indices: Vec<usize> = node.children.iter()
-        .enumerate()
-        .filter(|(_, c)| c.borrow().visits == 0)
-        .map(|(i, _)| i)
-        .collect();
     
-    if not_visited_indices.is_empty() {
+    if node.next_move_to_perform == get_n_moves() {
         get_expanded_leaf_index_all_visited(node_ref)
     } else {
-        not_visited_indices[rng.random_range(0..not_visited_indices.len())]
+        node.children.len() - 1
     }
 }
 
