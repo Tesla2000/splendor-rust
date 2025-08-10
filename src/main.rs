@@ -33,46 +33,44 @@ fn main() {
         roolout(&Node::add_child(&root, new_state), &all_moves, &mut rng);
     }
     for _ in 0..100 {
-        let expanded_leaf = get_expanded_leaf(&root, &mut rng);
+        let leaf_index = get_expanded_leaf_index(&root, &mut rng);
+        let expanded_leaf = &root.borrow().children[leaf_index];
         roolout(expanded_leaf, &all_moves, &mut rng)
     }
     println!("Finished")
 }
 
-fn roolout(mut current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut ThreadRng){
+fn roolout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut ThreadRng){
+    let mut current_owned = Rc::clone(current);
     loop {
-        if current.borrow().visits == 0 {
-            if !expand_tree(&current, all_moves) {
+        let n_visits = current_owned.borrow().visits;
+        if n_visits == 0 {
+            if !expand_tree(&current_owned, all_moves) {
                 println!("No valid moves");
-                backpropagate(&current, -1.0);
+                backpropagate(&current_owned, -1.0);
                 break;
             }
-        } else {
-            let expanded_child = get_expanded_leaf(&current, rng);
-            current = expanded_child;
         }
+        let leaf_index = get_expanded_leaf_index(&current_owned, rng);
 
-
-        let new_current;
-        let children_count = current.borrow().children.len();
+        let children_count = current_owned.borrow().children.len();
         if children_count > 0 {
-            let random_index = rng.random_range(0..children_count);
-            new_current = Rc::clone(&current.borrow().children[random_index]);
+            let new_current = Rc::clone(&current_owned.borrow().children[leaf_index]);
+            current_owned = new_current;
         } else {
             break;
         }
-        current = &new_current;
-        if current.borrow().get_game_state().get_current_player_index() == 0 {
-            let max_points = current.borrow().get_game_state().get_players().iter().map(|p| p.get_points()).max().unwrap();
+        if current_owned.borrow().get_game_state().get_current_player_index() == 0 {
+            let max_points = current_owned.borrow().get_game_state().get_players().iter().map(|p| p.get_points()).max().unwrap();
             if max_points < 15 {
                 continue;
             }
-            if current.borrow().get_game_state().get_current_player().get_points() == max_points {
+            if current_owned.borrow().get_game_state().get_current_player().get_points() == max_points {
                 println!("Player 0 wins");
-                backpropagate(&current, 1.0);
+                backpropagate(&current_owned, 1.0);
             } else {
                 println!("Player 0 looses");
-                backpropagate(&current, -1.0);
+                backpropagate(&current_owned, -1.0);
             }
             break;
         }
@@ -93,22 +91,31 @@ fn expand_tree(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>) -> b
     !valid_moves.is_empty()
 }
 
-fn get_expanded_leaf(root_ref: &Rc<RefCell<Node>>, rng: &mut ThreadRng) -> &Rc<RefCell<Node>> {
-    let root = root_ref.borrow();
-    let not_visited_leafs= root.children.iter().filter(|c| c.borrow().visits == 0).collect::<Vec<_>>();
-    if not_visited_leafs.is_empty() {
-        root.children.iter()
-            .max_by(|a, b| Node::ucb1(a).partial_cmp(&Node::ucb1(b)).unwrap())
+fn get_expanded_leaf_index(node_ref: &Rc<RefCell<Node>>, rng: &mut ThreadRng) -> usize {
+    let node = node_ref.borrow();
+    let not_visited_indices: Vec<usize> = node.children.iter()
+        .enumerate()
+        .filter(|(_, c)| c.borrow().visits == 0)
+        .map(|(i, _)| i)
+        .collect();
+    
+    if not_visited_indices.is_empty() {
+        node.children.iter()
+            .enumerate()
+            .max_by(|(_, a), (_, b)| Node::ucb1(a).partial_cmp(&Node::ucb1(b)).unwrap())
+            .map(|(i, _)| i)
             .expect("No children")
     } else {
-        not_visited_leafs[rng.random_range(0..not_visited_leafs.len())]
+        not_visited_indices[rng.random_range(0..not_visited_indices.len())]
     }
-
 }
 
 fn backpropagate(node: &Rc<RefCell<Node>>, is_win: f32) {
-    node.borrow_mut().visits += 1;
-    node.borrow_mut().wins += is_win;
+    {
+        let mut node_mut = node.borrow_mut();
+        node_mut.visits += 1;
+        node_mut.wins += is_win;
+    }
     
     if let Some(parent) = node.borrow().parent.upgrade() {
         backpropagate(&parent, -is_win);

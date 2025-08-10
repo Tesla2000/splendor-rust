@@ -44,6 +44,9 @@ impl Node {
 
     pub fn ucb1(child_ref: &Rc<RefCell<Node>>) -> f32 {
         let child = child_ref.borrow();
+        if child.visits == 0 {
+            panic!("UCB1 called on unvisited node");
+        }
         if let Some(parent) = child.parent.upgrade() {
             child.wins / child.visits as f32 + 2.0 * ((parent.borrow().visits as f32).ln() / child.visits as f32).sqrt()
         } else { 
