@@ -20,6 +20,7 @@ mod node;
 
 fn main() {
     let n_players: u8 = 2;
+    let print = false;
     let mut rng = rng();
 
     let root = Node::new(create_initial_game_state(n_players, &mut rng));
@@ -30,23 +31,41 @@ fn main() {
     let all_moves: Vec<_> = get_all_moves();
     for m in &valid_moves {
         let new_state = m.perform(&root.borrow().get_game_state());
-        roolout(&Node::add_child(&root, new_state), &all_moves, &mut rng);
+        roolout(&Node::add_child(&root, new_state), &all_moves, &mut rng, print);
     }
-    for _ in 0..1 {
+    for _ in 0..10000 {
         let leaf_index = get_expanded_leaf_index_all_visited(&root);
-        let expanded_leaf = &root.borrow().children[leaf_index];
-        roolout(expanded_leaf, &all_moves, &mut rng)
+        let expanded_leaf = Rc::clone(&root.borrow().children[leaf_index]);
+        roolout(&expanded_leaf, &all_moves, &mut rng, print)
     }
-    println!("Finished")
+    println!("\nRoot children statistics:");
+    println!("Child | Visits | Score | Win Rate");
+    println!("------|--------|-------|----------");
+    for (i, child) in root.borrow().children.iter().enumerate() {
+        let child_ref = child.borrow();
+        let win_rate = if child_ref.visits > 0 {
+            (child_ref.visits as f32 + child_ref.score) / child_ref.visits as f32 / 2.0
+        } else {
+            0.0
+        };
+        println!("{:5} | {:6} | {:5.1} | {:8.2}%", 
+            i, 
+            child_ref.visits, 
+            child_ref.score,
+            win_rate * 100.0
+        );
+    }
 }
 
-fn roolout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut ThreadRng){
+fn roolout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut ThreadRng, print: bool){
     let mut current_owned = Rc::clone(current);
     loop {
         let n_visits = current_owned.borrow().visits;
         if n_visits == 0 {
             if !expand_tree(&current_owned, all_moves) {
-                println!("No valid moves");
+                if print {
+                    println!("No valid moves");
+                }
                 backpropagate(&current_owned, -1.0);
                 break;
             }
@@ -67,10 +86,14 @@ fn roolout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mu
             }
             let n_points = current_owned.borrow().get_game_state().get_current_player().get_points();
             if n_points == max_points {
-                println!("Player 0 wins");
+                if print {
+                    println!("Player 0 wins");
+                }
                 backpropagate(&current_owned, 1.0);
             } else {
-                println!("Player 0 looses");
+                if print {
+                    println!("Player 0 looses");
+                }
                 backpropagate(&current_owned, -1.0);
             }
             break;
