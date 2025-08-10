@@ -32,8 +32,8 @@ fn main() {
         let new_state = m.perform(&root.borrow().get_game_state());
         roolout(&Node::add_child(&root, new_state), &all_moves, &mut rng);
     }
-    for _ in 0..100 {
-        let leaf_index = get_expanded_leaf_index(&root, &mut rng);
+    for _ in 0..1 {
+        let leaf_index = get_expanded_leaf_index_all_visited(&root);
         let expanded_leaf = &root.borrow().children[leaf_index];
         roolout(expanded_leaf, &all_moves, &mut rng)
     }
@@ -65,7 +65,8 @@ fn roolout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mu
             if max_points < 15 {
                 continue;
             }
-            if current_owned.borrow().get_game_state().get_current_player().get_points() == max_points {
+            let n_points = current_owned.borrow().get_game_state().get_current_player().get_points();
+            if n_points == max_points {
                 println!("Player 0 wins");
                 backpropagate(&current_owned, 1.0);
             } else {
@@ -100,21 +101,27 @@ fn get_expanded_leaf_index(node_ref: &Rc<RefCell<Node>>, rng: &mut ThreadRng) ->
         .collect();
     
     if not_visited_indices.is_empty() {
-        node.children.iter()
-            .enumerate()
-            .max_by(|(_, a), (_, b)| Node::ucb1(a).partial_cmp(&Node::ucb1(b)).unwrap())
-            .map(|(i, _)| i)
-            .expect("No children")
+        get_expanded_leaf_index_all_visited(node_ref)
     } else {
         not_visited_indices[rng.random_range(0..not_visited_indices.len())]
     }
 }
 
+fn get_expanded_leaf_index_all_visited(node_ref: &Rc<RefCell<Node>>) -> usize {
+    let node = node_ref.borrow();
+    node.children.iter()
+        .enumerate()
+        .max_by(|(_, a), (_, b)| Node::ucb1(a).partial_cmp(&Node::ucb1(b)).unwrap())
+        .map(|(i, _)| i)
+        .expect("No children")
+}
+
+
 fn backpropagate(node: &Rc<RefCell<Node>>, is_win: f32) {
     {
         let mut node_mut = node.borrow_mut();
         node_mut.visits += 1;
-        node_mut.wins += is_win;
+        node_mut.score += is_win;
     }
     
     if let Some(parent) = node.borrow().parent.upgrade() {
