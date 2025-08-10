@@ -4,7 +4,7 @@ use crate::game_state::GameState;
 
 pub struct Node {
     pub game_state: GameState,
-    pub victory: u32,
+    pub wins: u32,
     pub visits: u32,
     pub parent: Weak<RefCell<Node>>,
     pub children: Vec<Rc<RefCell<Node>>>,
@@ -14,7 +14,7 @@ impl Node {
     pub fn new(game_state: GameState) -> Rc<RefCell<Node>> {
         Rc::new(RefCell::new(Node {
             game_state,
-            victory: 0,
+            wins: 0,
             visits: 0,
             parent: Weak::new(),
             children: Vec::new(),
@@ -28,7 +28,7 @@ impl Node {
     ) -> Rc<RefCell<Node>> {
         let child = Rc::new(RefCell::new(Node {
             game_state,
-            victory: 0,
+            wins: 0,
             visits: 0,
             parent: Rc::downgrade(parent),
             children: Vec::new(),

@@ -1,10 +1,10 @@
-use std::ops::RangeTo;
-use std::rc::Rc;
-use rand::prelude::IndexedRandom;
-use rand::{rng, Rng};
 use crate::game_state::{create_initial_game_state, GameState};
 use crate::moves::all_moves::get_all_moves;
 use crate::node::Node;
+use rand::prelude::IndexedRandom;
+use rand::{rng, Rng};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 mod card;
 mod resource;
@@ -33,6 +33,7 @@ fn main() {
 
         if valid_moves.is_empty() {
             println!("No valid moves");
+            backpropagate(&current, 0);
             break;
         }
 
@@ -53,5 +54,22 @@ fn main() {
             }
         }
         current_state = new_current_state;
+        if current_state.get_current_player_index() == 0 {
+            let max_points = current_state.get_players().iter().map(|p| p.get_points()).max().unwrap();
+            if current_state.get_current_player().get_points() == max_points {
+                println!("Player {} wins", current_state.get_current_player_index());
+                backpropagate(&current, 1);
+                break;
+            }
+        }
+    }
+}
+
+fn backpropagate(node: &Rc<RefCell<Node>>, is_win: u32) {
+    node.borrow_mut().visits += 1;
+    node.borrow_mut().wins += is_win;
+    
+    if let Some(parent) = node.borrow().parent.upgrade() {
+        backpropagate(&parent, (is_win + 1) % 2);
     }
 }
