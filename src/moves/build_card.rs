@@ -1,7 +1,6 @@
 use crate::board::rows::card_reference::CardReference;
 use crate::game_state::{GameState, GameStateBuilder};
 use crate::moves::move_trait::Move;
-use crate::moves::reserve::{Reserve, RESERVE_RESOURCES};
 
 pub(crate) struct BuildCard {
     card_reference: CardReference,

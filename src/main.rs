@@ -2,7 +2,6 @@ use crate::game_state::create_initial_game_state;
 use crate::moves::all_moves::get_all_moves;
 use crate::moves::move_trait::Move;
 use crate::node::Node;
-use rand::prelude::{IndexedRandom, IteratorRandom};
 use rand::rngs::ThreadRng;
 use rand::{rng, Rng};
 use std::cell::RefCell;

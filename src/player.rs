@@ -66,17 +66,7 @@ impl Player {
         self.reserve.len() < MAX_RESERVE_CARDS
     }
 
-    pub fn add_reserve(&self, card: &'static Card) -> Self {
-        let mut reserve = self.reserve.clone();
-        reserve.push(card);
-        Self {
-            deck: self.deck.clone(),
-            resources: self.resources.clone(),
-            reserve: reserve,
-            aristocrats: self.aristocrats.clone(),
-        }
-    }
-    
+
     pub fn to_builder(&self) -> PlayerBuilder {
         PlayerBuilder::new(self)
     }

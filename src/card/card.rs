@@ -2,7 +2,6 @@ use crate::card::cost::Cost;
 use crate::card::tier::Tier;
 use crate::resource::Resource;
 
-#[derive(Clone)]
 pub struct Card {
     cost: Cost,
     production: Resource,
@@ -42,4 +41,3 @@ impl Card {
     }
 }
 
-const NULL_CARD: Card = Card::new(Cost::new(0, 0, 0, 0, 0), Resource::Green, 0, Tier::First);

@@ -10,7 +10,7 @@ pub(crate) struct GetThree{
 
 impl GetThree {
     pub fn new(resource1: Resource, resource2: Resource, resource3: Resource) -> Self {
-        if (resource1 == resource2 || resource1 == resource3 || resource2 == resource3) {
+        if resource1 == resource2 || resource1 == resource3 || resource2 == resource3 {
             panic!("Resources must be unique.");
         }
         let mut green: u8 = 0;

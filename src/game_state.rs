@@ -25,9 +25,6 @@ impl GameState {
         &self.players.get(self.current_player_index).unwrap()
     }
     
-    pub fn to_builder(&self) -> GameStateBuilder {
-        GameStateBuilder::new(self)
-    }
 }
 
 pub fn create_initial_game_state(n_players: u8, rng: &mut ThreadRng) -> GameState {

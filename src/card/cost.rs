@@ -53,37 +53,4 @@ impl Cost {
         self.n_black
     }
     
-    pub fn to_builder(&self) -> CostBuilder {
-        CostBuilder::new(self)
-    }
-}
-
-pub(crate) struct CostBuilder {
-    pub n_green: u8,
-    pub n_red: u8,
-    pub n_blue: u8,
-    pub n_white: u8,
-    pub n_black: u8,
-}
-
-impl CostBuilder {
-    fn new(cost: &Cost) -> Self {
-        Self {
-            n_green: cost.n_green,
-            n_red: cost.n_red,
-            n_blue: cost.n_blue,
-            n_white: cost.n_white,
-            n_black: cost.n_black,
-        }
-    }
-
-    pub fn build(self) -> Cost {
-        Cost {
-            n_green: self.n_green,
-            n_red: self.n_red,
-            n_blue: self.n_blue,
-            n_white: self.n_white,
-            n_black: self.n_black,
-        }
-    }
 }

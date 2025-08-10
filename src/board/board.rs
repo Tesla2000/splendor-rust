@@ -3,7 +3,6 @@ use crate::aristocrat_storage::ARISTOCRAT_STORAGE;
 use crate::board::rows::rows::Rows;
 use crate::resources::Resources;
 use rand::prelude::{SliceRandom, ThreadRng};
-use crate::board::rows::card_reference::CardReference;
 
 #[derive(Clone)]
 pub struct Board {

@@ -1,5 +1,4 @@
 use crate::card::cost::Cost;
-use getset::Getters;
 #[derive(Clone)]
 pub struct Resources {
     n_green: u8,

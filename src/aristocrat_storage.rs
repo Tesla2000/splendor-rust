@@ -28,10 +28,7 @@ impl AristocratStorage {
         &self.aristocrats[index]
     }
     
-    pub fn get_all_aristocrats(&self) -> &[Aristocrat] {
-        &self.aristocrats
-    }
-    
+
     pub fn len(&self) -> usize {
         self.aristocrats.len()
     }

@@ -59,6 +59,7 @@ impl CardStorage {
         cards.push(Card::new(Cost::new(3, 0, 3, 0, 2), Resource::Black, 1, Tier::Second));
         cards.push(Card::new(Cost::new(4, 2, 1, 0, 0), Resource::Black, 2, Tier::Second));
         cards.push(Card::new(Cost::new(5, 3, 0, 0, 0), Resource::Black, 2, Tier::Second));
+        cards.push(Card::new(Cost::new(0, 0, 0, 5, 0), Resource::Black, 2, Tier::Second));
         cards.push(Card::new(Cost::new(0, 0, 0, 0, 6), Resource::Black, 3, Tier::Second));
         cards.push(Card::new(Cost::new(2, 3, 2, 0, 0), Resource::Blue, 1, Tier::Second));
         cards.push(Card::new(Cost::new(3, 0, 3, 2, 0), Resource::Blue, 1, Tier::Second));
@@ -72,6 +73,8 @@ impl CardStorage {
         cards.push(Card::new(Cost::new(0, 5, 0, 0, 3), Resource::White, 2, Tier::Second));
         cards.push(Card::new(Cost::new(0, 5, 0, 0, 0), Resource::White, 2, Tier::Second));
         cards.push(Card::new(Cost::new(0, 0, 0, 6, 0), Resource::White, 3, Tier::Second));
+        cards.push(Card::new(Cost::new(2, 3, 0, 3, 0), Resource::Green, 1, Tier::Second));
+        cards.push(Card::new(Cost::new(0, 0, 3, 2, 2), Resource::Green, 1, Tier::Second));
         cards.push(Card::new(Cost::new(2, 3, 0, 0, 1), Resource::Green, 2, Tier::Second));
         cards.push(Card::new(Cost::new(3, 0, 3, 0, 0), Resource::Green, 2, Tier::Second));
         cards.push(Card::new(Cost::new(0, 0, 5, 0, 0), Resource::Green, 2, Tier::Second));
@@ -112,16 +115,12 @@ impl CardStorage {
         &self.cards[index]
     }
     
-    pub fn get_first_tier_cards(&self) -> &[Card] {
-        &self.cards[0..40]
-    }
-    
-    pub fn get_second_tier_cards(&self) -> &[Card] {
-        &self.cards[40..67]
-    }
-    
-    pub fn get_third_tier_cards(&self) -> &[Card] {
-        &self.cards[67..87]
+    pub fn get_tier_indices(&self, tier: Tier) -> Vec<usize> {
+        self.cards.iter()
+            .enumerate()
+            .filter(|(_, card)| card.tier() == tier)
+            .map(|(index, _)| index)
+            .collect()
     }
 }
 
