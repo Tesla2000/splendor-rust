@@ -20,20 +20,21 @@ mod node;
 
 fn main() {
     let n_players: u8 = 2;
+    let n_simulations: u16 = 2137;
     let print = false;
     let mut rng = rng();
 
-    let root = Node::new(create_initial_game_state(n_players, &mut rng));
-    let valid_moves: Vec<_> = get_all_moves()
-        .into_iter()
+    let root = Node::new(create_initial_game_state(n_players, &mut rng), &mut rng);
+    let all_moves = get_all_moves();
+    let valid_moves: Vec<_> = all_moves
+        .iter()
         .filter(|m| m.is_valid(&root.borrow().get_game_state()))
         .collect();
-    let all_moves: Vec<_> = get_all_moves();
     for m in &valid_moves {
         let new_state = m.perform(&root.borrow().get_game_state());
-        roolout(&Node::add_child(&root, new_state), &all_moves, &mut rng, print);
+        roolout(&Node::add_child(&root, new_state, &mut rng), &all_moves, &mut rng, print);
     }
-    for _ in 0..1000 {
+    for _ in 0..n_simulations {
         let leaf_index = get_expanded_leaf_index_all_visited(&root);
         let expanded_leaf = Rc::clone(&root.borrow().children[leaf_index]);
         roolout(&expanded_leaf, &all_moves, &mut rng, print)
@@ -62,7 +63,7 @@ fn roolout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mu
     loop {
         let n_visits = current_owned.borrow().visits;
         if n_visits == 0 {
-            if !expand_tree(&current_owned, all_moves) {
+            if !expand_tree(&current_owned, all_moves, rng) {
                 if print {
                     println!("No valid moves");
                 }
@@ -100,9 +101,8 @@ fn roolout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mu
         }
     }
 }
-
-fn expand_tree(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>) -> bool {
-    // False if there are no valid moves
+/// False if there are no valid moves
+fn expand_tree(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut ThreadRng) -> bool {
     let valid_moves: Vec<_> = all_moves
         .iter()
         .filter(|m| m.is_valid(current.borrow().get_game_state()))
@@ -110,7 +110,7 @@ fn expand_tree(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>) -> b
 
     for m in &valid_moves {
         let new_state = m.perform(current.borrow().get_game_state());
-        Node::add_child(current, new_state);
+        Node::add_child(current, new_state, rng);
     }
     !valid_moves.is_empty()
 }

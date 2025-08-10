@@ -104,9 +104,8 @@ impl ResourcesBuilder {
             n_gold: self.n_gold,
         }
     }
-
+    /// Assuming can pay
     pub fn pay_cost(&mut self, cost: &Cost) {
-        // Assuming can pay
         let gold: u8 = self.n_gold - self.get_n_missing_resources(cost);
         self.n_green = self.n_green.saturating_sub(cost.n_green());
         self.n_red = self.n_red.saturating_sub(cost.n_red());
