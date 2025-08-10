@@ -30,6 +30,10 @@ impl Row {
     pub fn to_builder(&self) -> RowBuilder {
         RowBuilder::new(self)
     }
+    
+    pub fn get_hidden(&self) -> &Vec<Card> {
+        &self.hidden
+    }
 }
 
 pub(crate) struct RowBuilder {

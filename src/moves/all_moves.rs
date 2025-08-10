@@ -6,6 +6,7 @@ use crate::moves::build_from_reserve::BuildFromReserve;
 use crate::moves::move_trait::Move;
 use crate::resource::Resource;
 use crate::board::rows::card_reference::CardReference;
+use crate::moves::reserve_from_hidden::ReserveFromHidden;
 
 pub fn get_all_moves() -> Vec<Box<dyn Move>> {
     let mut moves: Vec<Box<dyn Move>> = Vec::new();
@@ -38,6 +39,10 @@ pub fn get_all_moves() -> Vec<Box<dyn Move>> {
         }
     }
     
+    // Reserve top - index 0-2
+    for index in 0..=2 {
+        moves.push(Box::new(ReserveFromHidden::new(index)));
+    }
     // Build from reserve - index 0-3
     for index in 0..=3 {
         moves.push(Box::new(BuildFromReserve::new(index)));

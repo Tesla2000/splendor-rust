@@ -54,5 +54,4 @@ fn main() {
         }
         current_state = new_current_state;
     }
-    current_state;
 }

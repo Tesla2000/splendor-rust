@@ -6,3 +6,4 @@ mod _give_player_resources;
 pub mod build_card;
 pub mod build_from_reserve;
 pub mod all_moves;
+mod reserve_from_hidden;
