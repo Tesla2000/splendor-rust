@@ -26,7 +26,7 @@ impl Move for ReserveFromHidden {
         let mut game_state_builder = GameStateBuilder::new(game_state);
         game_state_builder.board.resources.n_gold -= 1;
         game_state_builder.players[game_state_builder.current_player_index].resources.n_gold += 1;
-        game_state_builder.players[game_state_builder.current_player_index].reserve.push(game_state_builder.board.rows.get(self.row_index).remove(0));
+        game_state_builder.players[game_state_builder.current_player_index].reserve.push(game_state_builder.board.rows.get(self.row_index).remove_from_hidden());
         self.finalize(game_state_builder)
     }
 }

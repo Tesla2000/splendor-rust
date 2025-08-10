@@ -13,6 +13,7 @@ mod resource;
 mod player;
 mod resources;
 mod aristocrat;
+mod aristocrat_storage;
 mod board;
 mod game_state;
 mod moves;
@@ -33,7 +34,7 @@ fn main() {
         let new_state = m.perform(&root.borrow().get_game_state());
         roolout(&Node::add_child(&root, new_state), &all_moves, &mut rng, print);
     }
-    for _ in 0..10000 {
+    for _ in 0..1000 {
         let leaf_index = get_expanded_leaf_index_all_visited(&root);
         let expanded_leaf = Rc::clone(&root.borrow().children[leaf_index]);
         roolout(&expanded_leaf, &all_moves, &mut rng, print)

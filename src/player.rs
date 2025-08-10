@@ -6,10 +6,10 @@ use crate::resources::{Resources, ResourcesBuilder};
 
 #[derive(Clone)]
 pub struct Player {
-    deck: Vec<Card>,
+    deck: Vec<&'static Card>,
     resources: Resources,
-    reserve: Vec<Card>,
-    aristocrats: Vec<Aristocrat>,
+    reserve: Vec<&'static Card>,
+    aristocrats: Vec<&'static Aristocrat>,
 }
 
 const MAX_RESERVE_CARDS: usize = 3;
@@ -25,7 +25,7 @@ impl Player {
     pub fn get_production(&self) -> Resources {
         let mut resources_builder = ResourcesBuilder::default();
         for card in &self.deck {
-            match card.production {
+            match card.production() {
                 Resource::Green => { resources_builder.n_green += 1}
                 Resource::Blue => { resources_builder.n_blue += 1}
                 Resource::Red => { resources_builder.n_red += 1}
@@ -45,7 +45,7 @@ impl Player {
     pub fn get_resources(&self) -> &Resources {
         &self.resources
     }
-    pub fn get_reserve(&self) -> &Vec<Card> {
+    pub fn get_reserve(&self) -> &Vec<&'static Card> {
         &self.reserve
     }
     
@@ -53,7 +53,7 @@ impl Player {
         let aristocrat_points = ARISTOCRAT_POINTS * self.aristocrats.len() as u8;
         let mut card_points: u8 = 0;
         for card in &self.deck {
-            card_points += card.n_points;
+            card_points += card.n_points();
         }
         aristocrat_points + card_points
     }
@@ -66,9 +66,9 @@ impl Player {
         self.reserve.len() < MAX_RESERVE_CARDS
     }
 
-    pub fn add_reserve(&self, card: &Card) -> Self {
+    pub fn add_reserve(&self, card: &'static Card) -> Self {
         let mut reserve = self.reserve.clone();
-        reserve.push(card.clone());
+        reserve.push(card);
         Self {
             deck: self.deck.clone(),
             resources: self.resources.clone(),
@@ -83,10 +83,10 @@ impl Player {
 }
 
 pub(crate) struct PlayerBuilder {
-    pub deck: Vec<Card>,
+    pub deck: Vec<&'static Card>,
     pub resources: crate::resources::ResourcesBuilder,
-    pub reserve: Vec<Card>,
-    pub aristocrats: Vec<Aristocrat>,
+    pub reserve: Vec<&'static Card>,
+    pub aristocrats: Vec<&'static Aristocrat>,
 }
 
 impl PlayerBuilder {
@@ -102,7 +102,7 @@ impl PlayerBuilder {
     pub(crate) fn get_production(&self) -> Resources {
         let mut resources_builder = ResourcesBuilder::default();
         for card in &self.deck {
-            match card.production {
+            match card.production() {
                 Resource::Green => { resources_builder.n_green += 1}
                 Resource::Blue => { resources_builder.n_blue += 1}
                 Resource::Red => { resources_builder.n_red += 1}
@@ -120,14 +120,14 @@ impl PlayerBuilder {
         )
     }
     
-    pub fn pay_for_card(&mut self, card: &Card) {
+    pub fn pay_for_card(&mut self, card: &'static Card) {
         let production = self.get_production();
         let remaining_cost = Cost::new(
-            card.cost.n_green().saturating_sub(production.n_green()),
-            card.cost.n_red().saturating_sub(production.n_red()),
-            card.cost.n_blue().saturating_sub(production.n_blue()),
-            card.cost.n_white().saturating_sub(production.n_white()),
-            card.cost.n_black().saturating_sub(production.n_black()),
+            card.cost().n_green().saturating_sub(production.n_green()),
+            card.cost().n_red().saturating_sub(production.n_red()),
+            card.cost().n_blue().saturating_sub(production.n_blue()),
+            card.cost().n_white().saturating_sub(production.n_white()),
+            card.cost().n_black().saturating_sub(production.n_black()),
         );
         self.resources.pay_cost(&remaining_cost)
     }

@@ -1,6 +1,6 @@
 use crate::aristocrat::Aristocrat;
+use crate::aristocrat_storage::ARISTOCRAT_STORAGE;
 use crate::board::rows::rows::Rows;
-use crate::card::cost::Cost;
 use crate::resources::Resources;
 use rand::prelude::{SliceRandom, ThreadRng};
 use crate::board::rows::card_reference::CardReference;
@@ -9,7 +9,7 @@ use crate::board::rows::card_reference::CardReference;
 pub struct Board {
     resources: Resources,
     rows: Rows,
-    aristocrats: Vec<Aristocrat>,
+    aristocrats: Vec<usize>,  // Indices into ARISTOCRAT_STORAGE
 }
 const INITIAL_GOLD: u8 = 5;
 
@@ -22,24 +22,13 @@ impl Board {
             4 => {n_resources=7;}
             _ => {panic!("N aristocrats must be 2, 3 or 4.");}
         }
-        let mut aristocrats = vec![
-            Aristocrat::new(Cost::new(0, 4, 0, 0, 4)),
-            Aristocrat::new(Cost::new(0, 3, 0, 3, 3)),
-            Aristocrat::new(Cost::new(0, 0, 4, 4, 0)),
-            Aristocrat::new(Cost::new(0, 0, 0, 4, 4)),
-            Aristocrat::new(Cost::new(0, 0, 4, 0, 4)),
-            Aristocrat::new(Cost::new(0, 3, 3, 3, 0)),
-            Aristocrat::new(Cost::new(0, 3, 3, 3, 3)),
-            Aristocrat::new(Cost::new(0, 0, 0, 4, 4)),
-            Aristocrat::new(Cost::new(0, 0, 3, 3, 3)),
-            Aristocrat::new(Cost::new(0, 3, 3, 0, 3)),
-        ];
-        aristocrats.shuffle(rng);
+        let mut aristocrat_indices: Vec<usize> = (0..ARISTOCRAT_STORAGE.len()).collect();
+        aristocrat_indices.shuffle(rng);
 
         Self {
             resources: Resources::new(n_resources, n_resources, n_resources, n_resources, n_resources, INITIAL_GOLD),
             rows: Rows::new(rng),
-            aristocrats: aristocrats.drain(0..n_aristocrats).collect(),
+            aristocrats: aristocrat_indices.drain(0..n_aristocrats).collect(),
         }
     }
     
@@ -47,8 +36,8 @@ impl Board {
         &self.rows
     }
     
-    pub fn get_aristocrats(&self) -> &Vec<Aristocrat> {
-        &self.aristocrats
+    pub fn get_aristocrats(&self) -> Vec<&'static Aristocrat> {
+        self.aristocrats.iter().map(|&i| ARISTOCRAT_STORAGE.get_aristocrat(i)).collect()
     }
     
     pub fn get_resources(&self) -> &Resources {
@@ -64,7 +53,7 @@ impl Board {
 pub(crate) struct BoardBuilder {
     pub resources: crate::resources::ResourcesBuilder,
     pub rows: crate::board::rows::rows::RowsBuilder,
-    pub aristocrats: Vec<Aristocrat>,
+    pub aristocrats: Vec<usize>,
 }
 
 impl BoardBuilder {

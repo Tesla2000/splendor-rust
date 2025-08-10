@@ -16,7 +16,7 @@ impl CardReference {
 }
 
 impl CardReference {
-    pub fn get_from_board<'a>(&self, board: &'a Board) -> &'a Card {
+    pub fn get_from_board(&self, board: &Board) -> &'static Card {
         board.get_rows().get_row(self.row_index).get_card(self.card_index)
     }
     

@@ -4,10 +4,10 @@ use crate::resource::Resource;
 
 #[derive(Clone)]
 pub struct Card {
-    pub cost: Cost,
-    pub production: Resource,
-    pub n_points: u8,
-    pub tier: Tier,
+    cost: Cost,
+    production: Resource,
+    n_points: u8,
+    tier: Tier,
 }
 
 impl Card {
@@ -23,6 +23,22 @@ impl Card {
             n_points,
             tier,
         }
+    }
+    
+    pub fn cost(&self) -> &Cost {
+        &self.cost
+    }
+    
+    pub fn production(&self) -> Resource {
+        self.production
+    }
+    
+    pub fn n_points(&self) -> u8 {
+        self.n_points
+    }
+    
+    pub fn tier(&self) -> Tier {
+        self.tier
     }
 }
 
