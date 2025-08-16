@@ -3,7 +3,7 @@ use std::rc::{Rc, Weak};
 use rand::prelude::SliceRandom;
 use rand::rngs::ThreadRng;
 use crate::game_state::GameState;
-use crate::moves::all_moves::{get_all_moves, get_n_moves};
+use crate::moves::all_moves::get_n_moves;
 
 pub struct Node {
     pub game_state: GameState,

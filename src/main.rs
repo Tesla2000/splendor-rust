@@ -5,6 +5,7 @@ use crate::node::Node;
 use rand::rngs::ThreadRng;
 use rand::{rng, Rng};
 use std::cell::RefCell;
+use std::ops::Deref;
 use std::rc::Rc;
 
 mod card;
@@ -20,7 +21,7 @@ mod node;
 
 fn main() {
     let n_players: u8 = 2;
-    let n_simulations: u16 = 2137;
+    let n_simulations: u16 = 21370;
     let print = false;
     let mut rng = rng();
 
@@ -103,25 +104,23 @@ fn roolout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mu
 }
 /// False if there are no valid moves
 fn add_leaf(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut ThreadRng) -> bool {
-    let (next_move_to_perform, valid_move_data) = {
+    let valid_move_data = {
         let current_node = current.borrow();
         let next_move_to_perform = current_node.next_move_to_perform;
-        
-        let valid_move = all_moves
+
+        let valid_move = current_node.move_order()
             .iter()
-            .enumerate()
-            .skip(next_move_to_perform)
-            .find(|(_, m)| m.is_valid(current_node.get_game_state()));
-        
-        (next_move_to_perform, valid_move)
+            .skip(next_move_to_perform).map(|move_index| all_moves[*move_index].deref()).enumerate()
+            .find(|(_, move_)| move_.is_valid(current_node.get_game_state()));
+        valid_move
     };
     
-    let valid_moves = next_move_to_perform > 0 || valid_move_data.is_some();
+    let valid_moves = valid_move_data.is_some();
     
     if let Some((index, m)) = valid_move_data {
         let new_state = m.perform(&current.borrow().game_state);
         Node::add_child(current, new_state, rng);
-        current.borrow_mut().next_move_to_perform = index;
+        current.borrow_mut().next_move_to_perform += index + 1;
     }
     
     valid_moves
@@ -130,7 +129,7 @@ fn add_leaf(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &m
 fn get_expanded_leaf_index(node_ref: &Rc<RefCell<Node>>) -> usize {
     let node = node_ref.borrow();
     
-    if node.next_move_to_perform == get_n_moves() {
+    if node.children[node.children.len() - 1].borrow().visits > 0 {
         get_expanded_leaf_index_all_visited(node_ref)
     } else {
         node.children.len() - 1
