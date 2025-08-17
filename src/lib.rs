@@ -18,6 +18,8 @@ use crate::node::Node;
 use rand::rng;
 use std::cell::RefCell;
 use std::rc::Rc;
+use crate::card::card::Card;
+use crate::resource::Resource;
 
 #[pyclass]
 struct SplendorGame {
@@ -43,7 +45,9 @@ impl SplendorGame {
     
     fn run_simulation(&self, n_simulations: u16) -> PyResult<Vec<(usize, u32, f32, f32)>> {
         let mut rng = rng();
-        let root = Node::new(create_initial_game_state(self.n_players, &mut rng), &mut rng);
+        let current_state = self.game_state.as_ref()
+            .ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("Game state not initialized"))?;
+        let root = Node::new(current_state.clone(), &mut rng);
         let all_moves = get_all_moves();
         
         // Initial expansion
@@ -190,7 +194,64 @@ impl SplendorGame {
         
         Ok(None)
     }
+
+    fn get_game_state(&self) -> PyResult<Vec<u8>> {
+        fn add_card_to_state(state: &mut Vec<u8>, card: Option<&&Card>) {
+            if let Some(card) = card {
+                state.push(card.n_points());
+                state.push(card.cost().n_green());
+                state.push(card.cost().n_red());
+                state.push(card.cost().n_blue());
+                state.push(card.cost().n_black());
+                state.push(card.cost().n_white());
+                match card.production() {
+                    Resource::Green => {state.append(&mut vec![1, 0, 0, 0, 0])}
+                    Resource::Red => {state.append(&mut vec![0, 1, 0, 0, 0])}
+                    Resource::Blue => {state.append(&mut vec![0, 0, 1, 0, 0])}
+                    Resource::White => {state.append(&mut vec![0, 0, 0, 1, 0])}
+                    Resource::Black => {state.append(&mut vec![0, 0, 0, 0, 1])}
+                }
+            }
+
+        }
+        let state = self.game_state.as_ref()
+            .ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("Game state not initialized"))?;
+        let mut output = Vec::new();
+
+        for player in state.get_players() {
+            output.push(player.get_points());
+            let resources = player.get_resources();
+            output.push(resources.n_green());
+            output.push(resources.n_red());
+            output.push(resources.n_blue());
+            output.push(resources.n_black());
+            output.push(resources.n_white());
+            output.push(resources.n_gold());
+            let production = player.get_production();
+            output.push(production.n_green());
+            output.push(production.n_red());
+            output.push(production.n_blue());
+            output.push(production.n_black());
+            output.push(production.n_white());
+            for i in 0..3 {
+                add_card_to_state(&mut output, player.get_reserve().get(i));
+            }
+        }
+        for row_index in 0..3 {
+            let row = state.get_board().get_rows().get_row(row_index);
+            for i in 0..4 {
+                if row.has_card(i) {
+                    add_card_to_state(&mut output, Option::from(&row.get_card(i)))
+                } else {
+                    add_card_to_state(&mut output, None)
+                }
+            }
+        }
+        Ok(output)
+    }
 }
+
+
 
 fn rollout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut rand::rngs::ThreadRng, print: bool) {
     use crate::moves::all_moves::get_n_moves;
