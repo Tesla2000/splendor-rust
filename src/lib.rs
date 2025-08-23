@@ -100,7 +100,7 @@ impl SplendorGame {
         Ok(valid_move_indices)
     }
     
-    fn apply_move(&mut self, move_index: usize) -> PyResult<()> {
+    fn apply_move(&mut self, move_index: usize) -> PyResult<SplendorGame> {
         let current_state = self.game_state.as_ref()
             .ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("Game state not initialized"))?;
         
@@ -121,9 +121,11 @@ impl SplendorGame {
         }
         
         let new_state = m.perform(current_state);
-        self.game_state = Some(new_state);
-        
-        Ok(())
+
+        Ok(SplendorGame {
+            n_players: self.n_players,
+            game_state: Some(new_state),
+        })
     }
     
     fn get_player_points(&self, player_index: usize) -> PyResult<u8> {
