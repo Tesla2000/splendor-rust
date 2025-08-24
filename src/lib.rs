@@ -213,6 +213,14 @@ impl SplendorGame {
                     Resource::White => {state.append(&mut vec![0, 0, 0, 1, 0])}
                     Resource::Black => {state.append(&mut vec![0, 0, 0, 0, 1])}
                 }
+            } else {
+                state.push(0);
+                state.push(0);
+                state.push(0);
+                state.push(0);
+                state.push(0);
+                state.push(0);
+                state.append(&mut vec![0, 0, 0, 0, 0])
             }
 
         }
