@@ -39,19 +39,19 @@ impl AllMoves {
         moves.push(Box::new(GetTwo::new(Resource::Black)));
         
         // Reserve any card - tier index 0-2, card index 0-3
-        for tier_index in 0..=2 {
-            for card_index in 0..=3 {
+        for tier_index in 0..3 {
+            for card_index in 0..4 {
                 moves.push(Box::new(Reserve::new(CardReference::new(tier_index, card_index))));
                 moves.push(Box::new(BuildCard::new(CardReference::new(tier_index, card_index))));
             }
         }
         
         // Reserve top - index 0-2
-        for index in 0..=2 {
+        for index in 0..3 {
             moves.push(Box::new(ReserveFromHidden::new(index)));
         }
         // Build from reserve - index 0-3
-        for index in 0..=3 {
+        for index in 0..3 {
             moves.push(Box::new(BuildFromReserve::new(index)));
         }
         let n_moves = moves.len();
