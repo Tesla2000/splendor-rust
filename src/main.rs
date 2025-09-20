@@ -2,8 +2,8 @@ use crate::game_state::create_initial_game_state;
 use crate::moves::all_moves::{get_all_moves, get_n_moves};
 use crate::moves::move_trait::Move;
 use crate::node::Node;
-use rand::rngs::ThreadRng;
-use rand::{rng, Rng};
+use rand::{Rng, SeedableRng};
+use rand_chacha::ChaCha8Rng;
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
@@ -23,7 +23,8 @@ fn main() {
     let n_players: u8 = 2;
     let n_simulations: u16 = 21370;
     let print = false;
-    let mut rng = rng();
+    let seed: u64 = 42; // You can change this seed value or make it configurable
+    let mut rng = ChaCha8Rng::seed_from_u64(seed);
 
     let root = Node::new(create_initial_game_state(n_players, &mut rng), &mut rng);
     let all_moves = get_all_moves();
@@ -59,7 +60,7 @@ fn main() {
     }
 }
 
-fn roolout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut ThreadRng, print: bool){
+fn roolout<R: Rng>(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut R, print: bool){
     let mut current_owned = Rc::clone(current);
     loop {
         let next_move_to_perform = current_owned.borrow().next_move_to_perform;
@@ -103,7 +104,7 @@ fn roolout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mu
     }
 }
 /// False if there are no valid moves
-fn add_leaf(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut ThreadRng) -> bool {
+fn add_leaf<R: Rng>(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut R) -> bool {
     let valid_move_data = {
         let current_node = current.borrow();
         let next_move_to_perform = current_node.next_move_to_perform;

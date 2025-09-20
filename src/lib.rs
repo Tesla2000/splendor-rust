@@ -15,7 +15,8 @@ use crate::game_state::create_initial_game_state;
 use crate::moves::all_moves::get_all_moves;
 use crate::moves::move_trait::Move;
 use crate::node::Node;
-use rand::rng;
+use rand::{Rng, SeedableRng};
+use rand_chacha::ChaCha8Rng;
 use std::cell::RefCell;
 use std::rc::Rc;
 use crate::card::card::Card;
@@ -25,17 +26,24 @@ use crate::resource::Resource;
 struct SplendorGame {
     n_players: u8,
     game_state: Option<game_state::GameState>,
+    seed: Option<u64>,
 }
 
 #[pymethods]
 impl SplendorGame {
     #[new]
-    fn new(n_players: u8) -> Self {
-        let mut rng = rng();
+    #[pyo3(signature = (n_players, seed=None))]
+    fn new(n_players: u8, seed: Option<u64>) -> Self {
+        let seed_value = seed.unwrap_or_else(|| {
+            // Use system randomness if no seed provided
+            rand::thread_rng().gen::<u64>()
+        });
+        let mut rng = ChaCha8Rng::seed_from_u64(seed_value);
         let initial_state = create_initial_game_state(n_players, &mut rng);
         SplendorGame { 
             n_players,
             game_state: Some(initial_state),
+            seed: Some(seed_value),
         }
     }
     
@@ -43,8 +51,25 @@ impl SplendorGame {
         self.n_players
     }
     
-    fn run_simulation(&self, n_simulations: u16) -> PyResult<Vec<(usize, u32, f32, f32)>> {
-        let mut rng = rng();
+    fn get_seed(&self) -> Option<u64> {
+        self.seed
+    }
+    
+    fn set_seed(&mut self, seed: u64) {
+        self.seed = Some(seed);
+    }
+    
+    fn reset_with_seed(&mut self, seed: u64) {
+        self.seed = Some(seed);
+        let mut rng = ChaCha8Rng::seed_from_u64(seed);
+        let initial_state = create_initial_game_state(self.n_players, &mut rng);
+        self.game_state = Some(initial_state);
+    }
+    
+    #[pyo3(signature = (n_simulations, seed=None))]
+    fn run_simulation(&self, n_simulations: u16, seed: Option<u64>) -> PyResult<Vec<(usize, u32, f32, f32)>> {
+        let seed_value = seed.or(self.seed).unwrap_or_else(|| rand::thread_rng().gen::<u64>());
+        let mut rng = ChaCha8Rng::seed_from_u64(seed_value);
         let current_state = self.game_state.as_ref()
             .ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("Game state not initialized"))?;
         let root = Node::new(current_state.clone(), &mut rng);
@@ -100,7 +125,8 @@ impl SplendorGame {
         Ok(valid_move_indices)
     }
     
-    fn apply_move(&mut self, move_index: usize) -> PyResult<SplendorGame> {
+    #[pyo3(signature = (move_index, seed=None))]
+    fn apply_move(&mut self, move_index: usize, seed: Option<u64>) -> PyResult<SplendorGame> {
         let current_state = self.game_state.as_ref()
             .ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("Game state not initialized"))?;
         
@@ -121,10 +147,14 @@ impl SplendorGame {
         }
         
         let new_state = m.perform(current_state);
+        
+        // Use provided seed or inherit from parent game
+        let new_seed = seed.or(self.seed);
 
         Ok(SplendorGame {
             n_players: self.n_players,
             game_state: Some(new_state),
+            seed: new_seed,
         })
     }
     
@@ -263,7 +293,7 @@ impl SplendorGame {
 
 
 
-fn rollout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut rand::rngs::ThreadRng, print: bool) {
+fn rollout<R: Rng>(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut R, print: bool) {
     use crate::moves::all_moves::get_n_moves;
     
     let mut current_owned = Rc::clone(current);
@@ -310,7 +340,7 @@ fn rollout(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mu
     }
 }
 
-fn add_leaf(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut rand::rngs::ThreadRng) -> bool {
+fn add_leaf<R: Rng>(current: &Rc<RefCell<Node>>, all_moves: &Vec<Box<dyn Move>>, rng: &mut R) -> bool {
     let valid_move_data = {
         let current_node = current.borrow();
         let next_move_to_perform = current_node.next_move_to_perform;

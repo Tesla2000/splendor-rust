@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::{Rc, Weak};
 use rand::prelude::SliceRandom;
-use rand::rngs::ThreadRng;
+use rand::Rng;
 use crate::game_state::GameState;
 use crate::moves::all_moves::get_n_moves;
 
@@ -15,7 +15,7 @@ pub struct Node {
     pub next_move_to_perform: usize,
 }
 impl Node {
-    pub fn new(game_state: GameState, rng: &mut ThreadRng) -> Rc<RefCell<Node>> {
+    pub fn new<R: Rng>(game_state: GameState, rng: &mut R) -> Rc<RefCell<Node>> {
         Rc::new(RefCell::new(Node {
             game_state,
             score: 0.0,
@@ -28,9 +28,9 @@ impl Node {
     }
 
     /// Add a child node to this node
-    pub fn add_child(
+    pub fn add_child<R: Rng>(
         parent: &Rc<RefCell<Node>>,
-        game_state: GameState, rng: &mut ThreadRng,
+        game_state: GameState, rng: &mut R,
     ) -> Rc<RefCell<Node>> {
         let child = Rc::new(RefCell::new(Node {
             game_state,
@@ -45,7 +45,7 @@ impl Node {
         child
     }
 
-    fn random_move_order(rng: &mut ThreadRng) -> Vec<usize> {
+    fn random_move_order<R: Rng>(rng: &mut R) -> Vec<usize> {
         let mut move_order: Vec<usize> = (0..get_n_moves()).collect();
         move_order.shuffle(rng);
         move_order
