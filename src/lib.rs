@@ -258,7 +258,8 @@ impl SplendorGame {
             .ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("Game state not initialized"))?;
         let mut output = Vec::new();
 
-        for player in state.get_players() {
+        let players_in_order: Vec<_>  = state.get_players().iter().chain(state.get_players().iter()).collect();
+        for player in &players_in_order[state.get_current_player_index()..state.get_current_player_index()+state.get_players().len()] {
             output.push(player.get_points());
             let resources = player.get_resources();
             output.push(resources.n_green());
