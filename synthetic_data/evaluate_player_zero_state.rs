@@ -8,23 +8,26 @@ use crate::getters::{get_last_player_points, get_value};
 pub enum EvaluationResult {
     Winning,
     Losing,
+    Draw,
 }
 
 impl EvaluationResult {
-    /// Convert evaluation result to label: Winning=1, Losing=-1
+    /// Convert evaluation result to label: Winning=1, Losing=-1, Draw=0
     pub fn to_label(self) -> i8 {
         match self {
             EvaluationResult::Winning => 1,
             EvaluationResult::Losing => -1,
+            EvaluationResult::Draw => 0,
         }
     }
 }
 
-/// Evaluate if a player 0 state is winning or losing
+/// Evaluate if a player 0 state is winning, losing, or draw
 pub fn evaluate_player_zero_state(player_zero_state: &GameState, n_players: u8) -> EvaluationResult {
     let traces = generate_traces_from_player_zero_state(player_zero_state, n_players);
 
     let mut all_children_losing = true;
+    let mut has_draw_child = false;
     let mut player_zero_states_to_recurse: Vec<GameState> = Vec::new();
 
     // Evaluate each child state and its traces
@@ -42,6 +45,18 @@ pub fn evaluate_player_zero_state(player_zero_state: &GameState, n_players: u8) 
 
             if is_better_than_all {
                 return EvaluationResult::Winning;
+            }
+
+            // Check if child has equal value to any state in traces (only when game ends)
+            let has_equal_state = trace_list.iter().any(|trace| {
+                trace.iter().any(|state| {
+                    let state_value = get_value(state, n_players);
+                    child_value == state_value
+                })
+            });
+
+            if has_equal_state {
+                has_draw_child = true;
             }
         }
 
@@ -72,10 +87,16 @@ pub fn evaluate_player_zero_state(player_zero_state: &GameState, n_players: u8) 
 
     // Recurse on collected player 0 states
     for state in player_zero_states_to_recurse {
-        if evaluate_player_zero_state(&state, n_players) == EvaluationResult::Winning {
+        let evaluation_result = evaluate_player_zero_state(&state, n_players);
+        if evaluation_result == EvaluationResult::Winning {
             return EvaluationResult::Winning;
         }
+        if evaluation_result == EvaluationResult::Draw {
+            has_draw_child = true;
+        }
     }
-
+    if has_draw_child {
+        return EvaluationResult::Draw;
+    }
     EvaluationResult::Losing
 }

@@ -1,2 +1,2 @@
-pub(crate) mod board;
-pub(crate) mod rows;
+pub mod board;
+pub mod rows;

@@ -1,12 +1,12 @@
 use pyo3::prelude::*;
 
-mod card;
-mod resource;
+pub mod card;
+pub mod resource;
 pub mod player;
 mod resources;
 mod aristocrat;
 mod aristocrat_storage;
-mod board;
+pub mod board;
 pub mod game_state;
 pub mod moves;
 
