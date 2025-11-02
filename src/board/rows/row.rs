@@ -4,13 +4,13 @@ use crate::card::card_storage::CARD_STORAGE;
 const CARD_COUNT: usize = 4;
 
 #[derive(Clone)]
-pub(crate) struct Row {
+pub struct Row {
     visible: Vec<usize>,  // Indices into CARD_STORAGE
     hidden: Vec<usize>,   // Indices into CARD_STORAGE
 }
 
 impl Row {
-    pub(crate) fn new(mut card_indices: Vec<usize>) -> Row {
+    pub fn new(mut card_indices: Vec<usize>) -> Row {
         let visible: Vec<usize> = card_indices.drain(0..CARD_COUNT.min(card_indices.len())).collect();
         Row {
             visible,

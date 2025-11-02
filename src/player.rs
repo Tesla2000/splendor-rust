@@ -74,7 +74,7 @@ impl Player {
 
 pub(crate) struct PlayerBuilder {
     pub deck: Vec<&'static Card>,
-    pub resources: crate::resources::ResourcesBuilder,
+    pub resources: ResourcesBuilder,
     pub reserve: Vec<&'static Card>,
     pub aristocrats: Vec<&'static Aristocrat>,
 }

@@ -110,14 +110,14 @@ impl ResourcesBuilder {
         self.n_green = self.n_green.saturating_sub(cost.n_green());
         self.n_red = self.n_red.saturating_sub(cost.n_red());
         self.n_blue = self.n_blue.saturating_sub(cost.n_blue());
-        self.n_white = self.n_green.saturating_sub(cost.n_white());
-        self.n_black = self.n_green.saturating_sub(cost.n_black());
+        self.n_white = self.n_white.saturating_sub(cost.n_white());
+        self.n_black = self.n_black.saturating_sub(cost.n_black());
         self.n_gold = gold;
     }
 
     pub fn add(&mut self, other: &Self) {
         self.n_green += other.n_green;
-        self.n_red += other.n_green;
+        self.n_red += other.n_red;
         self.n_blue += other.n_blue;
         self.n_black += other.n_black;
         self.n_white += other.n_white;

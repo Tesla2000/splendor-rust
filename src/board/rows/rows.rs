@@ -6,12 +6,12 @@ use crate::card::card_storage::CARD_STORAGE;
 use std::collections::HashMap;
 
 #[derive(Clone)]
-pub(crate) struct Rows {
+pub struct Rows {
     rows: HashMap<Tier, Row>,
 }
 
 impl Rows {
-    pub(crate) fn new<R: Rng>(rng: &mut R) -> Rows {
+    pub fn new<R: Rng>(rng: &mut R) -> Rows {
         let mut rows = HashMap::new();
         
         // Get indices for each tier and shuffle them
