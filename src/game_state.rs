@@ -1,6 +1,8 @@
 use rand::Rng;
 use crate::board::board::Board;
+use crate::card::card::Card;
 use crate::player::Player;
+use crate::resource::Resource;
 use crate::resources::ResourcesBuilder;
 
 #[derive(Clone)]
@@ -58,7 +60,7 @@ impl GameStateBuilder {
         &mut self.players[self.current_player_index]
     }
 
-    pub fn add_resources_to_player(&mut self, resources_builder: &ResourcesBuilder) {
+    pub(crate) fn add_resources_to_player(&mut self, resources_builder: &ResourcesBuilder) {
         self.players[self.current_player_index].add_resources(resources_builder)
     }
 
