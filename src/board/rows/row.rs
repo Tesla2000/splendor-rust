@@ -21,7 +21,7 @@ impl Row {
     pub fn has_card(&self, index: usize) -> bool {
         index < self.visible.len()
     }
-
+    
     pub fn get_card(&self, index: usize) -> &'static Card {
         CARD_STORAGE.get_card(self.visible[index])
     }

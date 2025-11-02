@@ -1,4 +1,5 @@
-use rand::prelude::{SliceRandom, ThreadRng};
+use rand::prelude::SliceRandom;
+use rand::Rng;
 use crate::board::rows::row::Row;
 use crate::card::tier::Tier;
 use crate::card::card_storage::CARD_STORAGE;
@@ -10,7 +11,7 @@ pub(crate) struct Rows {
 }
 
 impl Rows {
-    pub(crate) fn new(rng: &mut ThreadRng) -> Rows {
+    pub(crate) fn new<R: Rng>(rng: &mut R) -> Rows {
         let mut rows = HashMap::new();
         
         // Get indices for each tier and shuffle them

@@ -2,7 +2,8 @@ use crate::aristocrat::Aristocrat;
 use crate::aristocrat_storage::ARISTOCRAT_STORAGE;
 use crate::board::rows::rows::Rows;
 use crate::resources::Resources;
-use rand::prelude::{SliceRandom, ThreadRng};
+use rand::prelude::SliceRandom;
+use rand::Rng;
 
 #[derive(Clone)]
 pub struct Board {
@@ -13,7 +14,7 @@ pub struct Board {
 const INITIAL_GOLD: u8 = 5;
 
 impl Board {
-    pub fn new(n_aristocrats: usize, rng: &mut ThreadRng) -> Self {
+    pub fn new<R: Rng>(n_aristocrats: usize, rng: &mut R) -> Self {
         let n_resources: u8;
         match n_aristocrats {
             2 => {n_resources=4;}

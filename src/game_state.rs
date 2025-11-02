@@ -1,4 +1,4 @@
-use rand::prelude::ThreadRng;
+use rand::Rng;
 use crate::board::board::Board;
 use crate::player::Player;
 use crate::resources::ResourcesBuilder;
@@ -27,7 +27,7 @@ impl GameState {
     
 }
 
-pub fn create_initial_game_state(n_players: u8, rng: &mut ThreadRng) -> GameState {
+pub fn create_initial_game_state<R: Rng>(n_players: u8, rng: &mut R) -> GameState {
     let mut players: Vec<Player> = Vec::new();
     for _ in 0..n_players {
         players.push(Player::new())
