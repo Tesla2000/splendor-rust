@@ -3,6 +3,7 @@ use rand_chacha::ChaCha8Rng;
 use splendor::game_state::{create_initial_game_state, GameState};
 use splendor::moves::all_moves::get_all_moves;
 use std::collections::VecDeque;
+use std::env;
 
 mod constants;
 mod getters;
@@ -52,28 +53,37 @@ fn play_game<R: Rng>(n_players: u8, rng: &mut R, state_history: &mut VecDeque<Ga
 }
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
     let n_players: u8 = 2;
-    let seed: u64 = 42;
+    let num_games: u32 = if args.len() > 1 {
+        args[1].parse().expect("First argument must be a valid number of games")
+    } else {
+        1_000
+    };
+    let seed: u64 = if args.len() > 2 {
+        args[2].parse().expect("Second argument must be a valid seed")
+    } else {
+        42
+    };
+    let n_moves_limit = if args.len() > 3 {
+        args[3].parse().expect("Third argument must be a valid number of moves")
+    } else {
+        69
+    };
+    let max_depth: u8 = 3;
     let mut rng = ChaCha8Rng::seed_from_u64(seed);
     let history_size = n_players as usize;
-
-    // Track move count distribution
-    let num_games = 200_000;
-    let n_moves_limit = 69;
-    println!("Running {} games...", num_games);
+    println!("Running {} games with seed {}...", num_games, seed);
 
     // Collections for saving data
     let mut all_states: Vec<Vec<u8>> = Vec::new();
     let mut all_labels: Vec<i8> = Vec::new();
     let mut all_n_moves: Vec<i32> = Vec::new();
 
-    for i in 0..num_games {
+    let mut games_generated = 0;
+    while games_generated < num_games {
         let mut state_history: VecDeque<GameState> = VecDeque::with_capacity(history_size);
         let (n_moves, _final_state) = play_game(n_players, &mut rng, &mut state_history);
-
-        if (i + 1) % 100 == 0 {
-            println!("Completed {} games...", i + 1);
-        }
         if n_moves > n_moves_limit {
             continue;
         }
@@ -85,13 +95,17 @@ fn main() {
             .find(|state| state.get_current_player_index() == 0)
             .expect("Player zero state must exist in history");
 
-        let evaluation_result = evaluate_player_zero_state(player_zero_state, n_players);
+        let evaluation_result = evaluate_player_zero_state(player_zero_state, n_players, max_depth);
 
         // Convert state to bytes and save
         let state_bytes = game_state_to_bytes(player_zero_state);
         all_states.push(state_bytes);
         all_labels.push(evaluation_result.to_label());
         all_n_moves.push(n_moves);
+        games_generated += 1;
+        if games_generated % 100 == 0 {
+            println!("Completed {} games...", games_generated);
+        }
     }
 
     // Save all collected data

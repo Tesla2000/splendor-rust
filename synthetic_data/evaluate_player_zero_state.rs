@@ -23,7 +23,10 @@ impl EvaluationResult {
 }
 
 /// Evaluate if a player 0 state is winning, losing, or draw
-pub fn evaluate_player_zero_state(player_zero_state: &GameState, n_players: u8) -> EvaluationResult {
+pub fn evaluate_player_zero_state(player_zero_state: &GameState, n_players: u8, max_depth: u8) -> EvaluationResult {
+    if max_depth == 0 {
+        return EvaluationResult::Draw;
+    }
     let traces = generate_traces_from_player_zero_state(player_zero_state, n_players);
 
     let mut all_children_losing = true;
@@ -87,7 +90,7 @@ pub fn evaluate_player_zero_state(player_zero_state: &GameState, n_players: u8) 
 
     // Recurse on collected player 0 states
     for state in player_zero_states_to_recurse {
-        let evaluation_result = evaluate_player_zero_state(&state, n_players);
+        let evaluation_result = evaluate_player_zero_state(&state, n_players, max_depth - 1);
         if evaluation_result == EvaluationResult::Winning {
             return EvaluationResult::Winning;
         }
