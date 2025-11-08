@@ -1,5 +1,6 @@
 use splendor::state_encoder::{OneHotCardEncoder, ParameterEncoder, StateEncoder};
 use std::env;
+use std::fs;
 
 mod constants;
 mod getters;
@@ -7,10 +8,15 @@ mod generate_traces_from_player_zero_state;
 mod evaluate_player_zero_state;
 mod save_data;
 mod state_to_bytes;
+mod rng_state;
 pub mod generator;
+
+#[cfg(test)]
+mod test_rng_state;
 
 use generator::generate_synthetic_data;
 use save_data::save_states_with_labels;
+use rng_state::{create_or_load_rng, save_rng_state};
 
 fn create_encoder(use_one_hot: bool) -> Box<dyn StateEncoder> {
     if use_one_hot {
@@ -44,24 +50,60 @@ fn main() {
         true
     };
     let max_depth: u8 = 1;
+    let save_interval: u32 = 1000;
+    let rng_states_dir = "rng_states";
+    fs::create_dir_all(rng_states_dir).expect("Failed to create rng_states directory");
     let encoder = create_encoder(use_one_hot_encoder);
-    println!("Running {} games with seed {} (one-hot: {})...", num_games, seed, use_one_hot_encoder);
-    let (all_states, all_labels, all_n_moves) = generate_synthetic_data(
-        num_games,
-        n_players,
-        seed,
-        n_moves_limit,
-        max_depth,
-        encoder.as_ref(),
-    );
-    println!("\nSaving {} collected states...", all_states.len());
-    save_states_with_labels(
-        all_states,
-        all_labels,
-        all_n_moves,
-        "states.npy",
-        "labels.npy",
-        "n_moves.npy",
-    )
-    .expect("Failed to save data");
+    let initial_rng_path = format!("{}/rng_state_0.bin", rng_states_dir);
+    let mut rng = create_or_load_rng(seed, &initial_rng_path);
+    println!("Running {} games (one-hot: {})...", num_games, use_one_hot_encoder);
+    let mut all_states: Vec<Vec<u8>> = Vec::new();
+    let mut all_labels: Vec<i8> = Vec::new();
+    let mut all_n_moves: Vec<u8> = Vec::new();
+    for game_num in 1..=num_games {
+        let (states, labels, n_moves) = generate_synthetic_data(
+            1,
+            n_players,
+            &mut rng,
+            n_moves_limit,
+            max_depth,
+            encoder.as_ref(),
+        );
+        all_states.extend(states);
+        all_labels.extend(labels);
+        all_n_moves.extend(n_moves);
+        let rng_state_path = format!("{}/rng_state_{}.bin", rng_states_dir, game_num);
+        save_rng_state(&rng, &rng_state_path)
+            .expect("Failed to save RNG state");
+        if game_num % save_interval == 0 {
+            println!("Saving checkpoint at {} / {} games...", game_num, num_games);
+            save_states_with_labels(
+                all_states.clone(),
+                all_labels.clone(),
+                all_n_moves.clone(),
+                &format!("states_{}.npy", game_num),
+                &format!("labels_{}.npy", game_num),
+                &format!("n_moves_{}.npy", game_num),
+            )
+            .expect("Failed to save checkpoint data");
+            all_states.clear();
+            all_labels.clear();
+            all_n_moves.clear();
+        }
+        if game_num % 100 == 0 {
+            println!("Completed {} / {} games", game_num, num_games);
+        }
+    }
+    if !all_states.is_empty() {
+        println!("\nSaving final {} collected states...", all_states.len());
+        save_states_with_labels(
+            all_states,
+            all_labels,
+            all_n_moves,
+            &format!("states_{}.npy", num_games),
+            &format!("labels_{}.npy", num_games),
+            &format!("n_moves_{}.npy", num_games),
+        )
+        .expect("Failed to save data");
+    }
 }

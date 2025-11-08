@@ -1,5 +1,4 @@
-use rand::{Rng, SeedableRng};
-use rand_chacha::ChaCha8Rng;
+use rand::Rng;
 use splendor::game_state::{create_initial_game_state, GameState};
 use splendor::moves::all_moves::get_all_moves;
 use splendor::state_encoder::StateEncoder;
@@ -36,15 +35,14 @@ fn play_game<R: Rng>(n_players: u8, rng: &mut R, state_history: &mut VecDeque<Ga
     }
 }
 
-pub fn generate_synthetic_data(
+pub fn generate_synthetic_data<R: Rng>(
     num_games: u32,
     n_players: u8,
-    seed: u64,
+    rng: &mut R,
     n_moves_limit: i32,
     max_depth: u8,
     encoder: &dyn StateEncoder,
 ) -> (Vec<Vec<u8>>, Vec<i8>, Vec<u8>) {
-    let mut rng = ChaCha8Rng::seed_from_u64(seed);
     let history_size = n_players as usize;
     let mut all_states: Vec<Vec<u8>> = Vec::new();
     let mut all_labels: Vec<i8> = Vec::new();
@@ -52,7 +50,7 @@ pub fn generate_synthetic_data(
     let mut games_generated = 0;
     while games_generated < num_games {
         let mut state_history: VecDeque<GameState> = VecDeque::with_capacity(history_size);
-        let (n_moves, _final_state) = play_game(n_players, &mut rng, &mut state_history);
+        let (n_moves, _final_state) = play_game(n_players, rng, &mut state_history);
         if n_moves > n_moves_limit {
             continue;
         }

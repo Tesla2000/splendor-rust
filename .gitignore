@@ -1,1 +1,3 @@
 /target
+*.npy
+rng_states/
