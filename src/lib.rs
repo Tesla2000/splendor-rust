@@ -171,25 +171,6 @@ impl SplendorGame {
             encoder: create_encoder(use_one_hot_encoder),
         }
     }
-    
-    fn get_n_players(&self) -> u8 {
-        self.n_players
-    }
-    
-    fn get_seed(&self) -> Option<u64> {
-        self.seed
-    }
-    
-    fn set_seed(&mut self, seed: u64) {
-        self.seed = Some(seed);
-    }
-    
-    fn reset_with_seed(&mut self, seed: u64) {
-        self.seed = Some(seed);
-        let mut rng = ChaCha8Rng::seed_from_u64(seed);
-        let initial_state = create_initial_game_state(self.n_players, &mut rng);
-        self.game_state = Some(initial_state);
-    }
 
     fn get_valid_moves(&self) -> PyResult<Vec<usize>> {
         let state = self.game_state.as_ref()
@@ -237,28 +218,7 @@ impl SplendorGame {
             encoder: self.encoder.clone_box(),
         })
     }
-    
-    fn get_player_points(&self, player_index: usize) -> PyResult<u8> {
-        let state = self.game_state.as_ref()
-            .ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("Game state not initialized"))?;
-        
-        let players = state.get_players();
-        if player_index >= players.len() {
-            return Err(pyo3::exceptions::PyIndexError::new_err(
-                format!("Player index {} out of range", player_index)
-            ));
-        }
-        
-        Ok(players[player_index].get_points())
-    }
-    
-    fn get_current_player_index(&self) -> PyResult<usize> {
-        let state = self.game_state.as_ref()
-            .ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("Game state not initialized"))?;
-        
-        Ok(state.get_current_player_index())
-    }
-    
+
     fn get_all_player_points(&self) -> PyResult<Vec<u8>> {
         let state = self.game_state.as_ref()
             .ok_or_else(|| pyo3::exceptions::PyRuntimeError::new_err("Game state not initialized"))?;
@@ -461,7 +421,7 @@ fn generate_synthetic_data(
                         Resource::Black => state_bytes.extend_from_slice(&[0, 0, 0, 0, 1]),
                     }
                 } else {
-                    state_bytes.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+                    state_bytes.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
                 }
             }
         }

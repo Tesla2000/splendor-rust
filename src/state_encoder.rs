@@ -5,7 +5,7 @@ use crate::resource::Resource;
 
 const TOTAL_CARDS: usize = 90;
 const CARDS_PER_ROW: usize = 4;
-const CARD_PARAMS_SIZE: usize = 12;
+const CARD_PARAMS_SIZE: usize = 11;
 
 pub trait StateEncoder: Send + Sync {
     fn encode_row(&self, row: &Row) -> Vec<u8>;
