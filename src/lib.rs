@@ -318,10 +318,8 @@ impl SplendorGame {
                 add_card_to_state(&mut output, player.get_reserve().get(i));
             }
         }
-        for row_index in 0..3 {
-            let row = state.get_board().get_rows().get_row(row_index);
-            output.extend(self.encoder.encode_row(row));
-        }
+        let rows = state.get_board().get_rows();
+        output.extend(self.encoder.encode_rows(rows));
         Ok(output)
     }
 }
@@ -425,10 +423,8 @@ fn generate_synthetic_data(
                 }
             }
         }
-        for row_index in 0..3 {
-            let row = player_zero_state.get_board().get_rows().get_row(row_index);
-            state_bytes.extend(encoder.encode_row(row));
-        }
+        let rows = player_zero_state.get_board().get_rows();
+        state_bytes.extend(encoder.encode_rows(rows));
         all_states.push(state_bytes);
         all_labels.push(evaluation_result.to_label());
         all_n_moves.push(move_num as u8);

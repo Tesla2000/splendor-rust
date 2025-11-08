@@ -26,7 +26,7 @@ fn main() {
     let num_games: u32 = if args.len() > 1 {
         args[1].parse().expect("First argument must be a valid number of games")
     } else {
-        1_000
+        1
     };
     let seed: u64 = if args.len() > 2 {
         args[2].parse().expect("Second argument must be a valid seed")

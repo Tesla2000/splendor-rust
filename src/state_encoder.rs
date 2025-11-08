@@ -1,6 +1,6 @@
 use crate::card::card::Card;
 use crate::card::card_storage::CARD_STORAGE;
-use crate::board::rows::row::Row;
+use crate::board::rows::rows::Rows;
 use crate::resource::Resource;
 
 const TOTAL_CARDS: usize = 90;
@@ -8,8 +8,8 @@ const CARDS_PER_ROW: usize = 4;
 const CARD_PARAMS_SIZE: usize = 11;
 
 pub trait StateEncoder: Send + Sync {
-    fn encode_row(&self, row: &Row) -> Vec<u8>;
-    fn row_encoding_size(&self) -> usize;
+    fn encode_rows(&self, rows: &Rows) -> Vec<u8>;
+    fn rows_encoding_size(&self) -> usize;
     fn clone_box(&self) -> Box<dyn StateEncoder>;
 }
 
@@ -33,21 +33,23 @@ impl OneHotCardEncoder {
 }
 
 impl StateEncoder for OneHotCardEncoder {
-    fn encode_row(&self, row: &Row) -> Vec<u8> {
-        let mut encoding = vec![0u8; TOTAL_CARDS * CARDS_PER_ROW];
-        for position in 0..CARDS_PER_ROW {
-            if row.has_card(position) {
-                let card = row.get_card(position);
-                if let Some(card_index) = Self::get_card_index(card) {
-                    let offset = position * TOTAL_CARDS;
-                    encoding[offset + card_index] = 1;
+    fn encode_rows(&self, rows: &Rows) -> Vec<u8> {
+        let mut encoding = vec![0u8; TOTAL_CARDS];
+        for row_index in 0..3 {
+            let row = rows.get_row(row_index);
+            for position in 0..CARDS_PER_ROW {
+                if row.has_card(position) {
+                    let card = row.get_card(position);
+                    if let Some(card_index) = Self::get_card_index(card) {
+                        encoding[card_index] = 1;
+                    }
                 }
             }
         }
         encoding
     }
-    fn row_encoding_size(&self) -> usize {
-        TOTAL_CARDS * CARDS_PER_ROW
+    fn rows_encoding_size(&self) -> usize {
+        TOTAL_CARDS
     }
     fn clone_box(&self) -> Box<dyn StateEncoder> {
         Box::new(OneHotCardEncoder)
@@ -84,20 +86,23 @@ impl ParameterEncoder {
 }
 
 impl StateEncoder for ParameterEncoder {
-    fn encode_row(&self, row: &Row) -> Vec<u8> {
-        let mut encoding = Vec::with_capacity(CARD_PARAMS_SIZE * CARDS_PER_ROW);
-        for position in 0..CARDS_PER_ROW {
-            if row.has_card(position) {
-                let card = row.get_card(position);
-                encoding.extend(Self::encode_card(Some(card)));
-            } else {
-                encoding.extend(Self::encode_card(None));
+    fn encode_rows(&self, rows: &Rows) -> Vec<u8> {
+        let mut encoding = Vec::with_capacity(CARD_PARAMS_SIZE * CARDS_PER_ROW * 3);
+        for row_index in 0..3 {
+            let row = rows.get_row(row_index);
+            for position in 0..CARDS_PER_ROW {
+                if row.has_card(position) {
+                    let card = row.get_card(position);
+                    encoding.extend(Self::encode_card(Some(card)));
+                } else {
+                    encoding.extend(Self::encode_card(None));
+                }
             }
         }
         encoding
     }
-    fn row_encoding_size(&self) -> usize {
-        CARD_PARAMS_SIZE * CARDS_PER_ROW
+    fn rows_encoding_size(&self) -> usize {
+        CARD_PARAMS_SIZE * CARDS_PER_ROW * 3
     }
     fn clone_box(&self) -> Box<dyn StateEncoder> {
         Box::new(ParameterEncoder)

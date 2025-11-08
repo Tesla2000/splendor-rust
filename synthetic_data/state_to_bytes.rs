@@ -66,9 +66,7 @@ pub fn game_state_to_bytes(game_state: &GameState, encoder: &dyn StateEncoder) -
         }
     }
 
-    for row_index in 0..3 {
-        let row = game_state.get_board().get_rows().get_row(row_index);
-        output.extend(encoder.encode_row(row));
-    }
+    let rows = game_state.get_board().get_rows();
+    output.extend(encoder.encode_rows(rows));
     output
 }
