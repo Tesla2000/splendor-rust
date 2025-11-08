@@ -9,37 +9,48 @@ mod aristocrat_storage;
 pub mod board;
 pub mod game_state;
 pub mod moves;
+pub mod state_encoder;
 
 use crate::card::card::Card;
 use crate::game_state::create_initial_game_state;
 use crate::moves::all_moves::get_all_moves;
 use crate::moves::move_trait::Move;
 use crate::resource::Resource;
+use crate::state_encoder::{OneHotCardEncoder, ParameterEncoder, StateEncoder};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
+
+fn create_encoder(use_one_hot: bool) -> Box<dyn StateEncoder> {
+    if use_one_hot {
+        Box::new(OneHotCardEncoder::new())
+    } else {
+        Box::new(ParameterEncoder::new())
+    }
+}
 
 #[pyclass]
 struct SplendorGame {
     n_players: u8,
     game_state: Option<game_state::GameState>,
     seed: Option<u64>,
+    encoder: Box<dyn StateEncoder>,
 }
 
 #[pymethods]
 impl SplendorGame {
     #[new]
-    #[pyo3(signature = (n_players, seed=None))]
-    fn new(n_players: u8, seed: Option<u64>) -> Self {
+    #[pyo3(signature = (n_players, seed=None, use_one_hot_encoder=true))]
+    fn new(n_players: u8, seed: Option<u64>, use_one_hot_encoder: bool) -> Self {
         let seed_value = seed.unwrap_or_else(|| {
-            // Use system randomness if no seed provided
             rand::thread_rng().gen::<u64>()
         });
         let mut rng = ChaCha8Rng::seed_from_u64(seed_value);
         let initial_state = create_initial_game_state(n_players, &mut rng);
-        SplendorGame { 
+        SplendorGame {
             n_players,
             game_state: Some(initial_state),
             seed: Some(seed_value),
+            encoder: create_encoder(use_one_hot_encoder),
         }
     }
     
@@ -100,14 +111,12 @@ impl SplendorGame {
         }
         
         let new_state = m.perform(current_state);
-        
-        // Use provided seed or inherit from parent game
         let new_seed = seed.or(self.seed);
-
         Ok(SplendorGame {
             n_players: self.n_players,
             game_state: Some(new_state),
             seed: new_seed,
+            encoder: self.encoder.clone_box(),
         })
     }
     
@@ -233,13 +242,7 @@ impl SplendorGame {
         }
         for row_index in 0..3 {
             let row = state.get_board().get_rows().get_row(row_index);
-            for i in 0..4 {
-                if row.has_card(i) {
-                    add_card_to_state(&mut output, Option::from(&row.get_card(i)))
-                } else {
-                    add_card_to_state(&mut output, None)
-                }
-            }
+            output.extend(self.encoder.encode_row(row));
         }
         Ok(output)
     }

@@ -1,8 +1,8 @@
 use splendor::game_state::GameState;
 use splendor::card::card::Card;
 use splendor::resource::Resource;
+use splendor::state_encoder::StateEncoder;
 
-/// Helper function to add a card's data to the state vector
 fn add_card_to_state(state: &mut Vec<u8>, card: Option<&&Card>) {
     if let Some(card) = card {
         state.push(card.n_points());
@@ -29,9 +29,7 @@ fn add_card_to_state(state: &mut Vec<u8>, card: Option<&&Card>) {
     }
 }
 
-/// Convert a GameState to a flattened byte vector representation
-/// This matches the format used in the Python interface (lib.rs)
-pub fn game_state_to_bytes(game_state: &GameState) -> Vec<u8> {
+pub fn game_state_to_bytes(game_state: &GameState, encoder: &dyn StateEncoder) -> Vec<u8> {
     let mut output = Vec::new();
 
     // Add players in turn order (current player first)
@@ -68,17 +66,9 @@ pub fn game_state_to_bytes(game_state: &GameState) -> Vec<u8> {
         }
     }
 
-    // Add board state (3 rows × 4 cards)
     for row_index in 0..3 {
         let row = game_state.get_board().get_rows().get_row(row_index);
-        for i in 0..4 {
-            if row.has_card(i) {
-                add_card_to_state(&mut output, Some(&row.get_card(i)));
-            } else {
-                add_card_to_state(&mut output, None);
-            }
-        }
+        output.extend(encoder.encode_row(row));
     }
-
     output
 }

@@ -14,7 +14,7 @@ use std::fs::File;
 pub fn save_states_with_labels(
     states: Vec<Vec<u8>>,
     labels: Vec<i8>,
-    n_moves: Vec<i32>,
+    n_moves: Vec<u8>,
     states_path: &str,
     labels_path: &str,
     n_moves_path: &str,

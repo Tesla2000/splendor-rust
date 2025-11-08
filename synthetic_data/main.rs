@@ -2,6 +2,7 @@ use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use splendor::game_state::{create_initial_game_state, GameState};
 use splendor::moves::all_moves::get_all_moves;
+use splendor::state_encoder::{OneHotCardEncoder, ParameterEncoder, StateEncoder};
 use std::collections::VecDeque;
 use std::env;
 
@@ -17,6 +18,14 @@ use evaluate_player_zero_state::evaluate_player_zero_state;
 use getters::get_last_player_points;
 use save_data::save_states_with_labels;
 use state_to_bytes::game_state_to_bytes;
+
+fn create_encoder(use_one_hot: bool) -> Box<dyn StateEncoder> {
+    if use_one_hot {
+        Box::new(OneHotCardEncoder::new())
+    } else {
+        Box::new(ParameterEncoder::new())
+    }
+}
 
 fn play_game<R: Rng>(n_players: u8, rng: &mut R, state_history: &mut VecDeque<GameState>) -> (i32, GameState) {
     let mut current_state = create_initial_game_state(n_players, rng);
@@ -70,15 +79,21 @@ fn main() {
     } else {
         69
     };
-    let max_depth: u8 = 3;
+    let use_one_hot_encoder: bool = if args.len() > 4 {
+        args[4].parse().expect("Fourth argument must be a boolean for use_one_hot_encoder")
+    } else {
+        true
+    };
+    let max_depth: u8 = 1;
     let mut rng = ChaCha8Rng::seed_from_u64(seed);
     let history_size = n_players as usize;
-    println!("Running {} games with seed {}...", num_games, seed);
+    let encoder = create_encoder(use_one_hot_encoder);
+    println!("Running {} games with seed {} (one-hot: {})...", num_games, seed, use_one_hot_encoder);
 
     // Collections for saving data
     let mut all_states: Vec<Vec<u8>> = Vec::new();
     let mut all_labels: Vec<i8> = Vec::new();
-    let mut all_n_moves: Vec<i32> = Vec::new();
+    let mut all_n_moves: Vec<u8> = Vec::new();
 
     let mut games_generated = 0;
     while games_generated < num_games {
@@ -96,12 +111,10 @@ fn main() {
             .expect("Player zero state must exist in history");
 
         let evaluation_result = evaluate_player_zero_state(player_zero_state, n_players, max_depth);
-
-        // Convert state to bytes and save
-        let state_bytes = game_state_to_bytes(player_zero_state);
+        let state_bytes = game_state_to_bytes(player_zero_state, encoder.as_ref());
         all_states.push(state_bytes);
         all_labels.push(evaluation_result.to_label());
-        all_n_moves.push(n_moves);
+        all_n_moves.push(n_moves as u8);
         games_generated += 1;
         if games_generated % 100 == 0 {
             println!("Completed {} games...", games_generated);
