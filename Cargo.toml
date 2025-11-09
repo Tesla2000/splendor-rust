@@ -11,6 +11,10 @@ crate-type = ["cdylib", "rlib"]
 name = "synthetic_data"
 path = "synthetic_data/main.rs"
 
+[[bin]]
+name = "replay_game"
+path = "synthetic_data/replay_game.rs"
+
 [dependencies]
 rand = "0.8"
 rand_chacha = { version = "0.3", features = ["serde1"] }

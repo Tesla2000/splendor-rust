@@ -8,7 +8,6 @@ pub fn save_rng_state(rng: &ChaCha8Rng, path: &str) -> Result<(), Box<dyn std::e
     let serialized = bincode::serialize(rng)?;
     let mut file = File::create(path)?;
     file.write_all(&serialized)?;
-    println!("Saved RNG state to {}", path);
     Ok(())
 }
 
@@ -21,6 +20,12 @@ pub fn load_rng_state(path: &str) -> Result<ChaCha8Rng, Box<dyn std::error::Erro
     Ok(rng)
 }
 
+pub fn save_rng_states_batch(rng_states: &[ChaCha8Rng], path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let serialized = bincode::serialize(rng_states)?;
+    let mut file = File::create(path)?;
+    file.write_all(&serialized)?;
+    Ok(())
+}
 pub fn create_or_load_rng(seed: u64, state_path: &str) -> ChaCha8Rng {
     if Path::new(state_path).exists() {
         match load_rng_state(state_path) {

@@ -35,25 +35,28 @@ fn play_game<R: Rng>(n_players: u8, rng: &mut R, state_history: &mut VecDeque<Ga
     }
 }
 
-pub fn generate_synthetic_data<R: Rng>(
+pub fn generate_synthetic_data<R: Rng + Clone>(
     num_games: u32,
     n_players: u8,
     rng: &mut R,
     n_moves_limit: i32,
     max_depth: u8,
     encoder: &dyn StateEncoder,
-) -> (Vec<Vec<u8>>, Vec<i8>, Vec<u8>) {
+) -> (Vec<Vec<u8>>, Vec<i8>, Vec<u8>, Vec<R>) {
     let history_size = n_players as usize;
     let mut all_states: Vec<Vec<u8>> = Vec::new();
     let mut all_labels: Vec<i8> = Vec::new();
     let mut all_n_moves: Vec<u8> = Vec::new();
+    let mut rng_states_before_requirement: Vec<R> = Vec::new();
     let mut games_generated = 0;
     while games_generated < num_games {
+        let rng_snapshot = rng.clone();
         let mut state_history: VecDeque<GameState> = VecDeque::with_capacity(history_size);
         let (n_moves, _final_state) = play_game(n_players, rng, &mut state_history);
         if n_moves > n_moves_limit {
             continue;
         }
+        rng_states_before_requirement.push(rng_snapshot);
         let player_zero_state = state_history
             .iter()
             .rev()
@@ -66,5 +69,5 @@ pub fn generate_synthetic_data<R: Rng>(
         all_n_moves.push(n_moves as u8);
         games_generated += 1;
     }
-    (all_states, all_labels, all_n_moves)
+    (all_states, all_labels, all_n_moves, rng_states_before_requirement)
 }
